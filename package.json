@@ -6,9 +6,7 @@
     "build": "echo '请使用微信开发者工具进行构建'",
     "dev": "echo '请使用微信开发者工具进行开发预览'",
     "lint": "echo '代码检查'",
-    "preview": "echo '请使用微信开发者工具进行预览'",
-    "test": "jest",
-    "setup": "node setup-config.js"
+    "preview": "echo '请使用微信开发者工具进行预览'"
   },
   "keywords": [
     "miniprogram",
