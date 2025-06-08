@@ -1,0 +1,71 @@
+<!--pages/inventory/other/other.wxml-->
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-section">
+    <t-search
+      placeholder="搜索VIN码或车型"
+      value="{{searchValue}}"
+      bind:change="onSearchChange"
+      bind:submit="onSearchSubmit"
+      bind:clear="onSearchClear"
+    />
+  </view>
+
+  <!-- 筛选器 -->
+  <view class="filter-section">
+    <t-button
+      size="small" 
+      variant="outline"
+      bind:tap="toggleFilter"
+      icon="filter"
+    >
+      {{filterVisible ? '收起筛选' : '全部状态'}}
+    </t-button>
+  </view>
+
+  <!-- 库存列表表头 -->
+  <view class="table-header">
+    <text class="col-vin">VIN码</text>
+    <text class="col-series">车型系列</text>
+    <text class="col-config">配置</text>
+    <text class="col-color">颜色</text>
+    <text class="col-date">入库日期</text>
+    <text class="col-status">状态</text>
+  </view>
+
+  <!-- 库存列表 -->
+  <scroll-view class="inventory-list" scroll-y>
+    <view 
+      wx:for="{{filteredInventory}}" 
+      wx:key="vin"
+      class="inventory-item"
+      bind:tap="viewDetail"
+      data-item="{{item}}"
+    >
+      <view class="col-vin">{{item.vin}}</view>
+      <view class="col-series">{{item.series}} {{item.model}}</view>
+      <view class="col-config">{{item.config}}</view>
+      <view class="col-color">{{item.color}}</view>
+      <view class="col-date">{{item.arrivalDate}}</view>
+      <view class="col-status">
+        <t-tag
+          theme="{{item.status === '在库' ? 'success' : (item.status === '已预订' ? 'warning' : 'primary')}}"
+          size="small"
+        >
+          {{item.status}}
+        </t-tag>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{filteredInventory.length === 0}}" class="empty-state">
+    <t-icon name="inbox" size="48px" color="#ccc"></t-icon>
+    <text class="empty-text">暂无其他品牌车库存数据</text>
+  </view>
+
+  <!-- 底部统计 -->
+  <view class="stats-bottom">
+    <text>共 {{filteredInventory.length}} 辆其他品牌车</text>
+  </view>
+</view> 

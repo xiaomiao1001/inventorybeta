@@ -1,0 +1,50 @@
+<view class="login-container">
+  <!-- Logo区域 -->
+  <view class="logo-section">
+    <view class="logo-icon">
+      <t-icon name="car" size="60px" color="#3C4043"></t-icon>
+    </view>
+    <view class="title">郭四车行库存管理系统</view>
+    <view class="subtitle">请登录以访问系统</view>
+  </view>
+
+  <!-- 登录表单 -->
+  <view class="form-section">
+    <view class="form-item">
+      <text class="label">用户名</text>
+      <t-input
+        placeholder="请输入用户名"
+        value="{{username}}"
+        bind:change="onUsernameChange"
+        prefix-icon="user"
+        clearable
+      />
+    </view>
+    
+    <view class="form-item">
+      <text class="label">密码</text>
+      <t-input
+        type="password"
+        placeholder="请输入密码"
+        value="{{password}}"
+        bind:change="onPasswordChange"
+        prefix-icon="lock-on"
+        clearable
+      />
+    </view>
+
+    <t-button
+      theme="primary"
+      size="large"
+      block
+      bind:tap="handleLogin"
+      loading="{{loginLoading}}"
+    >
+      登录
+    </t-button>
+
+    <view class="tips">
+      提示：输入 owner/admin/sales 作为用户名可体验不同角色权限
+    </view>
+  </view>
+</view> 

@@ -1,0 +1,92 @@
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="header-section">
+    <text class="page-title">数据统计报表</text>
+    <text class="page-subtitle">查看各类数据统计信息</text>
+  </view>
+
+  <!-- 报表类型选择 -->
+  <view class="statistics-types">
+    <view class="stats-type-item" bind:tap="navigateToSalesStats">
+      <view class="type-icon sales">
+        <t-icon name="chart-bar" size="40px" color="#4285f4"></t-icon>
+      </view>
+      <view class="type-info">
+        <view class="type-name">销售统计报表</view>
+        <view class="type-desc">按时间段、车型、经销商等维度统计销售数据</view>
+        <view class="type-filters">
+          <text class="filter-tag">时间筛选</text>
+          <text class="filter-tag">车型筛选</text>
+          <text class="filter-tag">经销商筛选</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="stats-type-item" bind:tap="navigateToInventoryStats">
+      <view class="type-icon inventory">
+        <t-icon name="layers" size="40px" color="#4CAF50"></t-icon>
+      </view>
+      <view class="type-info">
+        <view class="type-name">库存统计报表</view>
+        <view class="type-desc">实时库存状态，入库出库趋势分析</view>
+        <view class="type-filters">
+          <text class="filter-tag">库存类型</text>
+          <text class="filter-tag">状态筛选</text>
+          <text class="filter-tag">趋势分析</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="stats-type-item" bind:tap="navigateToExports">
+      <view class="type-icon export">
+        <t-icon name="download" size="40px" color="#FF9800"></t-icon>
+      </view>
+      <view class="type-info">
+        <view class="type-name">数据导出功能</view>
+        <view class="type-desc">导出客户信息、库存明细、月度销售报表</view>
+        <view class="type-filters">
+          <text class="filter-tag">客户信息表</text>
+          <text class="filter-tag">库存明细表</text>
+          <text class="filter-tag">月度销售表</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速统计概览 -->
+  <view class="quick-stats">
+    <view class="section-title">快速统计</view>
+    <view class="stats-grid">
+      <view class="stat-item">
+        <view class="stat-value">{{quickStats.monthSales}}</view>
+        <view class="stat-label">本月销售</view>
+        <view class="stat-unit">辆</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value">{{quickStats.totalInventory}}</view>
+        <view class="stat-label">库存总计</view>
+        <view class="stat-unit">辆</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value">{{quickStats.pendingDebt}}</view>
+        <view class="stat-label">待处理赊欠</view>
+        <view class="stat-unit">笔</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-value">{{quickStats.monthRevenue}}</view>
+        <view class="stat-label">本月营收</view>
+        <view class="stat-unit">万元</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 权限说明 -->
+  <view class="permission-notice">
+    <t-icon name="info-circle" size="16px" color="#666"></t-icon>
+    <text class="notice-text">
+      <text wx:if="{{userRole === 'owner'}}">您可以查看所有统计报表和导出数据</text>
+      <text wx:elif="{{userRole === 'admin'}}">您可以查看统计报表</text>
+      <text wx:else>当前角色无法访问详细统计功能</text>
+    </text>
+  </view>
+</view> 

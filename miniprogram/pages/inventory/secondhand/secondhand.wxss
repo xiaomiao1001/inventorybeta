@@ -1,0 +1,105 @@
+/* pages/inventory/secondhand/secondhand.wxss */
+.container {
+  padding: 10rpx;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+.search-section {
+  margin-bottom: 20rpx;
+}
+
+.filter-section {
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 120rpx 80rpx 140rpx 120rpx 120rpx 100rpx;
+  background: white;
+  padding: 20rpx 15rpx;
+  border-radius: 12rpx 12rpx 0 0;
+  border-bottom: 1rpx solid #f0f0f0;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.inventory-list {
+  background: white;
+  max-height: calc(100vh - 300rpx);
+  border-radius: 0 0 12rpx 12rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.inventory-item {
+  display: grid;
+  grid-template-columns: 120rpx 80rpx 140rpx 120rpx 120rpx 100rpx;
+  padding: 20rpx 15rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  font-size: 26rpx;
+  color: #666;
+  align-items: center;
+}
+
+.inventory-item:last-child {
+  border-bottom: none;
+}
+
+.inventory-item:active {
+  background-color: #f8f8f8;
+}
+
+.col-brand {
+  font-weight: 500;
+  color: #333;
+}
+
+.col-color,
+.col-date,
+.col-source {
+  text-align: center;
+  font-size: 24rpx;
+}
+
+.col-price {
+  text-align: center;
+  font-weight: 500;
+  color: #ff6b35;
+}
+
+.col-status {
+  display: flex;
+  justify-content: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 100rpx 0;
+  background: white;
+  border-radius: 12rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.empty-text {
+  display: block;
+  margin-top: 20rpx;
+  color: #999;
+  font-size: 28rpx;
+}
+
+.stats-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 20rpx;
+  text-align: center;
+  border-top: 1rpx solid #f0f0f0;
+  font-size: 28rpx;
+  color: #666;
+} 

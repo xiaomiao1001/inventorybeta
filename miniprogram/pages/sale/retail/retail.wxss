@@ -1,0 +1,255 @@
+/* pages/sale/retail/retail.wxss */
+.container {
+  padding: 0 0 160rpx 0;
+  background-color: #f5f5f5;
+  min-height: 100vh;
+}
+
+/* 步骤指示器 */
+.steps-indicator {
+  display: flex;
+  background: white;
+  padding: 30rpx 10rpx;
+  margin-bottom: 10rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 15rpx;
+  right: -50%;
+  width: 80rpx;
+  height: 2rpx;
+  background: #e5e5e5;
+}
+
+.step.active:not(:last-child)::after {
+  background: #1677ff;
+}
+
+.step-number {
+  width: 30rpx;
+  height: 30rpx;
+  border-radius: 50%;
+  background: #e5e5e5;
+  color: #999;
+  font-size: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8rpx;
+}
+
+.step.active .step-number {
+  background: #1677ff;
+  color: white;
+}
+
+.step-title {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.step.active .step-title {
+  color: #1677ff;
+}
+
+/* 步骤内容 */
+.step-content {
+  padding: 10rpx;
+}
+
+.section {
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 10rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 30rpx;
+}
+
+/* 搜索区域 */
+.search-section {
+  margin: 20rpx 0;
+}
+
+/* 车辆列表 */
+.vehicle-list {
+  max-height: 500rpx;
+  overflow-y: auto;
+}
+
+.vehicle-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx;
+  border: 2rpx solid #f0f0f0;
+  border-radius: 12rpx;
+  margin-bottom: 15rpx;
+  transition: all 0.3s ease;
+}
+
+.vehicle-item.selected {
+  border-color: #1677ff;
+  background-color: #f0f8ff;
+}
+
+.vehicle-info {
+  flex: 1;
+}
+
+.vehicle-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.vehicle-desc {
+  font-size: 24rpx;
+  color: #666;
+}
+
+/* 表单项 */
+.form-item {
+  margin-bottom: 30rpx;
+}
+
+.label {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 12rpx;
+  font-weight: 500;
+}
+
+/* 身份证上传 */
+.id-card-upload {
+  border: 2rpx dashed #d9d9d9;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.upload-placeholder {
+  padding: 60rpx;
+  text-align: center;
+  color: #999;
+}
+
+.upload-text {
+  display: block;
+  font-size: 28rpx;
+  margin: 15rpx 0 8rpx;
+}
+
+.upload-hint {
+  font-size: 24rpx;
+  color: #bbb;
+}
+
+.id-card-preview {
+  position: relative;
+}
+
+.id-card-preview image {
+  width: 100%;
+  height: 200rpx;
+}
+
+.reupload-btn {
+  position: absolute;
+  bottom: 10rpx;
+  right: 10rpx;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+}
+
+/* 支付方式 */
+.payment-methods {
+  display: flex;
+  gap: 15rpx;
+}
+
+.payment-method {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 25rpx 15rpx;
+  border: 2rpx solid #f0f0f0;
+  border-radius: 12rpx;
+  background: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.payment-method.selected {
+  border-color: #1677ff;
+  background: #f0f8ff;
+}
+
+.payment-method text {
+  font-size: 24rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+
+.payment-method.selected text {
+  color: #1677ff;
+}
+
+/* 复选框行 */
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+}
+
+.checkbox-label {
+  font-size: 28rpx;
+  color: #333;
+}
+
+/* 赊欠和折抵部分 */
+.credit-section,
+.tradein-section {
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  margin-top: 20rpx;
+}
+
+/* 底部操作栏 */
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+  display: flex;
+  gap: 20rpx;
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.bottom-actions .t-button {
+  flex: 1;
+} 

@@ -1,0 +1,60 @@
+<!--pages/sale/wholesale/wholesale.wxml-->
+<view class="container">
+  <view class="section">
+    <view class="section-title">选择库存类型</view>
+    <view class="section-desc">请选择要出库的车辆所在的库存类型</view>
+    
+    <!-- 库存类型选择卡片 -->
+    <view class="inventory-types">
+      <view class="inventory-card" bind:tap="selectInventoryType" data-type="hongri">
+        <view class="card-icon">
+          <t-icon name="car" size="32px" color="#1677ff"></t-icon>
+        </view>
+        <view class="card-content">
+          <text class="card-title">鸿日车</text>
+          <text class="card-desc">查看和管理鸿日车库存信息</text>
+        </view>
+        <t-icon name="chevron-right" size="20px" color="#999"></t-icon>
+      </view>
+
+      <view class="inventory-card" bind:tap="selectInventoryType" data-type="secondhand">
+        <view class="card-icon">
+          <t-icon name="swap" size="32px" color="#52c41a"></t-icon>
+        </view>
+        <view class="card-content">
+          <text class="card-title">二手车</text>
+          <text class="card-desc">查看和管理二手车库存信息</text>
+        </view>
+        <t-icon name="chevron-right" size="20px" color="#999"></t-icon>
+      </view>
+
+      <view class="inventory-card" bind:tap="selectInventoryType" data-type="other">
+        <view class="card-icon">
+          <t-icon name="bulletpoint" size="32px" color="#ff6b35"></t-icon>
+        </view>
+        <view class="card-content">
+          <text class="card-title">其他品牌车</text>
+          <text class="card-desc">查看和管理其他品牌车库存信息</text>
+        </view>
+        <t-icon name="chevron-right" size="20px" color="#999"></t-icon>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近出库记录 -->
+  <view class="section">
+    <view class="section-title">最近出库记录</view>
+    <t-cell-group>
+      <t-cell 
+        wx:for="{{recentWholesales}}" 
+        wx:key="id"
+        title="{{item.title}}"
+        description="{{item.description}}"
+        note="{{item.date}}"
+        arrow
+        bind:click="viewWholesaleDetail"
+        data-id="{{item.id}}"
+      />
+    </t-cell-group>
+  </view>
+</view> 

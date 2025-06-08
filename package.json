@@ -1,0 +1,24 @@
+{
+  "name": "miniprogram-ts-quickstart",
+  "version": "1.0.0",
+  "description": "郭四车行库存管理系统",
+  "scripts": {
+    "build": "echo '请使用微信开发者工具进行构建'",
+    "dev": "echo '请使用微信开发者工具进行开发预览'",
+    "lint": "echo '代码检查'",
+    "preview": "echo '请使用微信开发者工具进行预览'"
+  },
+  "keywords": [
+    "miniprogram",
+    "typescript",
+    "tdesign"
+  ],
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "tdesign-miniprogram": "^1.9.4"
+  },
+  "devDependencies": {
+    "miniprogram-api-typings": "^2.8.3-1"
+  }
+}

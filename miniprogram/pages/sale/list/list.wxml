@@ -1,0 +1,85 @@
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="header-section">
+    <text class="page-title">销售出库管理</text>
+    <text class="page-subtitle">选择出库类型</text>
+  </view>
+
+  <!-- 出库类型选择 -->
+  <view class="sale-types">
+    <!-- 零售出库 -->
+    <view class="sale-type-item" bind:tap="navigateToRetail">
+      <view class="type-icon retail">
+        <t-icon name="user" size="40px" color="#4285f4"></t-icon>
+      </view>
+      <view class="type-content">
+        <view class="type-header">
+          <view class="type-name">零售出库</view>
+          <view class="type-badge retail">个人客户</view>
+        </view>
+        <view class="type-desc">适用于个人客户购车，包含客户信息录入、支付记录、赊欠管理、旧车折抵等功能</view>
+        <view class="type-features">
+          <text class="feature-tag">客户信息</text>
+          <text class="feature-tag">身份证识别</text>
+          <text class="feature-tag">支付记录</text>
+          <text class="feature-tag">赊欠管理</text>
+          <text class="feature-tag">旧车折抵</text>
+        </view>
+      </view>
+      <view class="type-arrow">
+        <t-icon name="chevron-right" size="20px" color="#999"></t-icon>
+      </view>
+    </view>
+
+    <!-- 批发出库 -->
+    <view class="sale-type-item" bind:tap="navigateToWholesale">
+      <view class="type-icon wholesale">
+        <t-icon name="shop" size="40px" color="#FF9800"></t-icon>
+      </view>
+      <view class="type-content">
+        <view class="type-header">
+          <view class="type-name">批发出库</view>
+          <view class="type-badge wholesale">经销商</view>
+        </view>
+        <view class="type-desc">适用于经销商提车，系统自动判断经销商等级并加载配置价格</view>
+        <view class="type-features">
+          <text class="feature-tag">经销商管理</text>
+          <text class="feature-tag">等级判断</text>
+          <text class="feature-tag">配置价格</text>
+          <text class="feature-tag">批量操作</text>
+        </view>
+      </view>
+      <view class="type-arrow">
+        <t-icon name="chevron-right" size="20px" color="#999"></t-icon>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近出库记录 - 仅所有者和管理员可见 -->
+  <view wx:if="{{userRole === 'owner' || userRole === 'admin'}}" class="recent-section">
+    <view class="section-title">最近出库记录</view>
+    <view class="recent-list">
+      <view class="recent-item" wx:for="{{recentSales}}" wx:key="id" bind:tap="viewSaleDetail" data-id="{{item.id}}">
+        <view class="recent-info">
+          <view class="recent-title">{{item.vehicleInfo}}</view>
+          <view class="recent-customer">客户：{{item.customerName}}</view>
+          <view class="recent-date">{{item.saleDate}}</view>
+        </view>
+        <view class="recent-amount">
+          <text class="amount-label">{{item.saleType === 'retail' ? '零售' : '批发'}}</text>
+          <text class="amount-value">¥{{item.amount}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 权限说明 -->
+  <view class="permission-notice">
+    <t-icon name="info-circle" size="16px" color="#666"></t-icon>
+    <text class="notice-text">
+      <text wx:if="{{userRole === 'owner'}}">您可以进行所有类型的出库操作</text>
+      <text wx:elif="{{userRole === 'admin'}}">您可以进行零售和批发出库操作</text>
+      <text wx:elif="{{userRole === 'sales'}}">您只能进行零售出库操作</text>
+    </text>
+  </view>
+</view> 

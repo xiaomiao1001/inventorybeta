@@ -1,0 +1,153 @@
+<!--index.wxml-->
+<view class="container">
+  <!-- 精简的用户信息头部 - 只占5% -->
+  <view class="compact-header">
+    <view class="user-compact">
+      <text class="welcome-compact">您好，{{userName}}</text>
+      <view class="role-tag-compact">
+        <text wx:if="{{userRole === 'owner'}}" class="role-text-compact owner">所有者</text>
+        <text wx:elif="{{userRole === 'admin'}}" class="role-text-compact admin">管理员</text>
+        <text wx:elif="{{userRole === 'sales'}}" class="role-text-compact sales">销售人员</text>
+        <text wx:elif="{{userRole === 'dealer'}}" class="role-text-compact dealer">经销商</text>
+      </view>
+    </view>
+    <view class="logout-compact" bind:tap="onLogout">
+      <t-icon name="logout" size="16px" color="#666"></t-icon>
+    </view>
+  </view>
+
+  <!-- 精简的搜索框 -->
+  <view class="search-compact">
+    <t-search 
+      placeholder="搜索车辆信息"
+      bind:change="onSearchChange"
+      bind:submit="onSearchSubmit"
+    />
+  </view>
+
+  <!-- 功能模块 - 根据角色动态显示 -->
+  <view class="section">
+    <view class="section-title">
+      <text wx:if="{{userRole === 'owner'}}">所有者功能</text>
+      <text wx:elif="{{userRole === 'admin'}}">管理员功能</text>
+      <text wx:elif="{{userRole === 'sales'}}">销售人员功能</text>
+      <text wx:elif="{{userRole === 'dealer'}}">经销商功能</text>
+    </view>
+    
+    <!-- 所有者功能 - 修改为只显示两个主要功能 -->
+    <view wx:if="{{userRole === 'owner'}}" class="function-grid-wide">
+      <view class="function-item-wide" data-route="/pages/inventory/list/list" bind:tap="onNavigateToPage">
+        <t-icon name="view-list" size="28px" color="#4285f4"></t-icon>
+        <text class="function-text-wide">库存管理</text>
+      </view>
+      <view class="function-item-wide" data-route="/pages/sale/list/list" bind:tap="onNavigateToPage">
+        <t-icon name="minus-circle" size="28px" color="#4285f4"></t-icon>
+        <text class="function-text-wide">销售出库管理</text>
+      </view>
+    </view>
+
+    <!-- 管理员功能 -->
+    <view wx:elif="{{userRole === 'admin'}}" class="function-grid">
+      <view class="function-item" 
+            wx:for="{{adminFunctions}}" 
+            wx:key="text"
+            data-index="{{index}}"
+            bind:tap="onFunctionClick">
+        <t-icon name="{{item.icon}}" size="24px" color="#4285f4"></t-icon>
+        <text class="function-text">{{item.text}}</text>
+      </view>
+    </view>
+
+    <!-- 销售人员功能 -->
+    <view wx:elif="{{userRole === 'sales'}}" class="function-grid">
+      <view class="function-item" 
+            wx:for="{{salesFunctions}}" 
+            wx:key="text"
+            data-index="{{index}}"
+            bind:tap="onFunctionClick">
+        <t-icon name="{{item.icon}}" size="24px" color="#4285f4"></t-icon>
+        <text class="function-text">{{item.text}}</text>
+      </view>
+    </view>
+
+    <!-- 经销商功能 -->
+    <view wx:elif="{{userRole === 'dealer'}}" class="function-grid">
+      <view class="function-item" 
+            wx:for="{{dealerFunctions}}" 
+            wx:key="text"
+            data-index="{{index}}"
+            bind:tap="onFunctionClick">
+        <t-icon name="{{item.icon}}" size="24px" color="#4285f4"></t-icon>
+        <text class="function-text">{{item.text}}</text>
+      </view>
+      <view class="dealer-notice">
+        <t-icon name="info-circle" size="16px" color="#ff9800"></t-icon>
+        <text class="notice-text">经销商功能正在开发中</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 库存概览 - 横向方块排版 -->
+  <view class="section">
+    <view class="section-title">库存概览</view>
+    <view class="inventory-overview-horizontal">
+      <view class="inventory-card" data-type="hongri" bind:tap="onInventoryClick">
+        <view class="inventory-card-header">
+          <view class="inventory-icon hongri-icon">
+            <t-icon name="car" size="20px" color="#4CAF50"></t-icon>
+          </view>
+        </view>
+        <view class="inventory-card-content">
+          <view class="inventory-card-title">鸿日车库存</view>
+          <view class="inventory-card-number">{{inventoryOverview.hongri}}</view>
+          <view class="inventory-card-unit">辆</view>
+        </view>
+      </view>
+      
+      <view class="inventory-card" data-type="secondhand" bind:tap="onInventoryClick">
+        <view class="inventory-card-header">
+          <view class="inventory-icon secondhand-icon">
+            <t-icon name="refresh" size="20px" color="#FF9800"></t-icon>
+          </view>
+        </view>
+        <view class="inventory-card-content">
+          <view class="inventory-card-title">二手车库存</view>
+          <view class="inventory-card-number">{{inventoryOverview.secondhand}}</view>
+          <view class="inventory-card-unit">辆</view>
+        </view>
+      </view>
+      
+      <view class="inventory-card" data-type="others" bind:tap="onInventoryClick">
+        <view class="inventory-card-header">
+          <view class="inventory-icon others-icon">
+            <t-icon name="bulletpoint" size="20px" color="#2196F3"></t-icon>
+          </view>
+        </view>
+        <view class="inventory-card-content">
+          <view class="inventory-card-title">其他品牌</view>
+          <view class="inventory-card-number">{{inventoryOverview.others}}</view>
+          <view class="inventory-card-unit">辆</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速统计 - 仅所有者和管理员可见 -->
+  <view wx:if="{{userRole === 'owner' || userRole === 'admin'}}" class="section">
+    <view class="section-title">快速统计</view>
+    <view class="stats-overview">
+      <view class="stats-item">
+        <view class="stats-label">本月销售</view>
+        <view class="stats-value">12辆</view>
+      </view>
+      <view class="stats-item">
+        <view class="stats-label">待处理赊欠</view>
+        <view class="stats-value">3笔</view>
+      </view>
+      <view class="stats-item">
+        <view class="stats-label">库存总计</view>
+        <view class="stats-value">{{inventoryOverview.hongri + inventoryOverview.secondhand + inventoryOverview.others}}辆</view>
+      </view>
+    </view>
+  </view>
+</view>

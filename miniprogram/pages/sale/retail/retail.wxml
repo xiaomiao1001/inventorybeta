@@ -1,0 +1,272 @@
+<!--pages/sale/retail/retail.wxml-->
+<view class="container">
+  <!-- 步骤指示器 -->
+  <view class="steps-indicator">
+    <view class="step {{currentStep >= 1 ? 'active' : ''}}">
+      <text class="step-number">1</text>
+      <text class="step-title">车辆选择</text>
+    </view>
+    <view class="step {{currentStep >= 2 ? 'active' : ''}}">
+      <text class="step-number">2</text>
+      <text class="step-title">客户信息</text>
+    </view>
+    <view class="step {{currentStep >= 3 ? 'active' : ''}}">
+      <text class="step-number">3</text>
+      <text class="step-title">支付信息</text>
+    </view>
+  </view>
+
+  <!-- 步骤1：车辆选择 -->
+  <view wx:if="{{currentStep === 1}}" class="step-content">
+    <view class="section">
+      <view class="section-title">选择出库车辆</view>
+      
+      <!-- 库存类型选择 -->
+      <t-tabs value="{{selectedInventoryType}}" bind:change="onInventoryTypeChange">
+        <t-tab-panel label="鸿日车" value="hongri"></t-tab-panel>
+        <t-tab-panel label="二手车" value="secondhand"></t-tab-panel>
+        <t-tab-panel label="其他品牌" value="other"></t-tab-panel>
+      </t-tabs>
+
+      <!-- 搜索栏 -->
+      <view class="search-section">
+        <t-search
+          placeholder="搜索VIN码或车型"
+          value="{{vehicleSearchValue}}"
+          bind:change="onVehicleSearchChange"
+        />
+      </view>
+
+      <!-- 车辆列表 -->
+      <view class="vehicle-list">
+        <view 
+          wx:for="{{availableVehicles}}" 
+          wx:key="id"
+          class="vehicle-item {{selectedVehicle && selectedVehicle.id === item.id ? 'selected' : ''}}"
+          bind:tap="selectVehicle"
+          data-vehicle="{{item}}"
+        >
+          <view class="vehicle-info">
+            <text class="vehicle-title">{{item.series}} {{item.model}}</text>
+            <text class="vehicle-desc">VIN: {{item.vin}} | {{item.color}} | {{item.config}}</text>
+          </view>
+          <t-icon name="check-circle-filled" wx:if="{{selectedVehicle && selectedVehicle.id === item.id}}" color="#52c41a"></t-icon>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 步骤2：客户信息 -->
+  <view wx:if="{{currentStep === 2}}" class="step-content">
+    <view class="section">
+      <view class="section-title">客户信息</view>
+      
+      <!-- 身份证照片上传 -->
+      <view class="form-item">
+        <text class="label">身份证照片</text>
+        <view class="id-card-upload">
+          <view wx:if="{{!customerInfo.idCardImage}}" class="upload-placeholder" bind:tap="uploadIdCard">
+            <t-icon name="camera" size="32px" color="#999"></t-icon>
+            <text class="upload-text">点击上传身份证照片</text>
+            <text class="upload-hint">支持OCR自动识别</text>
+          </view>
+          <view wx:else class="id-card-preview">
+            <image src="{{customerInfo.idCardImage}}" mode="aspectFit" bind:tap="previewIdCard"></image>
+            <view class="reupload-btn" bind:tap="uploadIdCard">重新上传</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 客户基本信息 -->
+      <view class="form-item">
+        <text class="label">姓名</text>
+        <t-input
+          placeholder="请输入客户姓名"
+          value="{{customerInfo.name}}"
+          bind:change="onCustomerInfoChange"
+          data-field="name"
+        />
+      </view>
+
+      <view class="form-item">
+        <text class="label">电话号码</text>
+        <t-input
+          placeholder="请输入电话号码"
+          type="number"
+          value="{{customerInfo.phone}}"
+          bind:change="onCustomerInfoChange"
+          data-field="phone"
+        />
+      </view>
+
+      <view class="form-item">
+        <text class="label">地址</text>
+        <t-input
+          placeholder="请输入详细地址"
+          value="{{customerInfo.address}}"
+          bind:change="onCustomerInfoChange"
+          data-field="address"
+        />
+      </view>
+    </view>
+  </view>
+
+  <!-- 步骤3：支付信息 -->
+  <view wx:if="{{currentStep === 3}}" class="step-content">
+    <view class="section">
+      <view class="section-title">支付信息</view>
+
+      <!-- 支付方式选择 -->
+      <view class="form-item">
+        <text class="label">支付方式</text>
+        <view class="payment-methods">
+          <view 
+            class="payment-method {{paymentInfo.method === 'scan' ? 'selected' : ''}}"
+            bind:tap="selectPaymentMethod"
+            data-method="scan"
+          >
+            <t-icon name="qrcode" size="24px"></t-icon>
+            <text>扫码支付</text>
+          </view>
+          <view 
+            class="payment-method {{paymentInfo.method === 'cash' ? 'selected' : ''}}"
+            bind:tap="selectPaymentMethod"
+            data-method="cash"
+          >
+            <t-icon name="money" size="24px"></t-icon>
+            <text>现金支付</text>
+          </view>
+          <view 
+            class="payment-method {{paymentInfo.method === 'transfer' ? 'selected' : ''}}"
+            bind:tap="selectPaymentMethod"
+            data-method="transfer"
+          >
+            <t-icon name="swap" size="24px"></t-icon>
+            <text>银行转账</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 支付金额 -->
+      <view wx:if="{{paymentInfo.method === 'scan' || paymentInfo.method === 'transfer'}}" class="form-item">
+        <text class="label">{{paymentInfo.method === 'scan' ? '扫码支付金额' : '转账金额'}}</text>
+        <t-input
+          placeholder="请输入金额"
+          type="digit"
+          value="{{paymentInfo.amount}}"
+          bind:change="onPaymentInfoChange"
+          data-field="amount"
+        />
+      </view>
+
+      <!-- 销售信息 -->
+      <view class="form-item">
+        <text class="label">销售人</text>
+        <t-input
+          placeholder="请输入销售人员姓名"
+          value="{{saleInfo.salesperson}}"
+          bind:change="onSaleInfoChange"
+          data-field="salesperson"
+        />
+      </view>
+
+      <!-- 赊欠信息 -->
+      <view class="form-item">
+        <view class="checkbox-row">
+          <checkbox bind:change="toggleCredit" checked="{{saleInfo.hasCredit}}"></checkbox>
+          <text class="checkbox-label">有赊欠</text>
+        </view>
+      </view>
+
+      <view wx:if="{{saleInfo.hasCredit}}" class="credit-section">
+        <view class="form-item">
+          <text class="label">赊欠金额</text>
+          <t-input
+            placeholder="请输入赊欠金额"
+            type="digit"
+            value="{{saleInfo.creditAmount}}"
+            bind:change="onSaleInfoChange"
+            data-field="creditAmount"
+          />
+        </view>
+        <view class="form-item">
+          <text class="label">约定还款日期</text>
+          <t-input
+            placeholder="请选择还款日期"
+            value="{{saleInfo.creditDueDate}}"
+            bind:tap="selectCreditDate"
+            readonly
+          />
+        </view>
+      </view>
+
+      <!-- 旧车折抵 -->
+      <view class="form-item">
+        <view class="checkbox-row">
+          <checkbox bind:change="toggleTradeIn" checked="{{saleInfo.hasTradeIn}}"></checkbox>
+          <text class="checkbox-label">有旧车折抵</text>
+        </view>
+      </view>
+
+      <view wx:if="{{saleInfo.hasTradeIn}}" class="tradein-section">
+        <view class="form-item">
+          <text class="label">旧车折抵金额</text>
+          <t-input
+            placeholder="请输入折抵金额"
+            type="digit"
+            value="{{saleInfo.tradeInAmount}}"
+            bind:change="onSaleInfoChange"
+            data-field="tradeInAmount"
+          />
+        </view>
+        <view class="form-item">
+          <text class="label">旧车品牌</text>
+          <t-input
+            placeholder="请输入旧车品牌"
+            value="{{saleInfo.tradeInBrand}}"
+            bind:change="onSaleInfoChange"
+            data-field="tradeInBrand"
+          />
+        </view>
+        <view class="form-item">
+          <text class="label">旧车颜色</text>
+          <t-input
+            placeholder="请输入旧车颜色"
+            value="{{saleInfo.tradeInColor}}"
+            bind:change="onSaleInfoChange"
+            data-field="tradeInColor"
+          />
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-actions">
+    <t-button 
+      wx:if="{{currentStep > 1}}"
+      theme="default" 
+      bind:tap="prevStep"
+    >
+      上一步
+    </t-button>
+    
+    <t-button 
+      wx:if="{{currentStep < 3}}"
+      theme="primary" 
+      bind:tap="nextStep"
+      disabled="{{!canNextStep}}"
+    >
+      下一步
+    </t-button>
+    
+    <t-button 
+      wx:if="{{currentStep === 3}}"
+      theme="primary" 
+      bind:tap="submitSale"
+      loading="{{submitting}}"
+    >
+      提交出库信息
+    </t-button>
+  </view>
+</view> 
