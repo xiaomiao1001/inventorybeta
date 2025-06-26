@@ -1,67 +1,95 @@
 <view class="container">
-  <!-- 页面标题 -->
-  <view class="header-section">
-    <text class="page-title">库存管理</text>
-    <text class="page-subtitle">选择要管理的库存类型</text>
+  <!-- 极简文字版导航 -->
+  <view class="header-modern">
+    <view class="breadcrumb">
+      <text class="breadcrumb-item">首页</text>
+      <t-icon name="chevron-right" size="12px" color="#999"></t-icon>
+      <text class="breadcrumb-current">库存管理</text>
+    </view>
+    <view class="header-title">
+      <text class="title-main">库存管理</text>
+    </view>
   </view>
 
-  <!-- 库存类型选择 -->
-  <view class="inventory-types">
-    <view class="inventory-type-item" bind:tap="navigateToHongri">
-      <view class="type-icon">
-        <t-icon name="car" size="40px" color="#4285f4"></t-icon>
+  <!-- 独立的搜索和筛选栏 -->
+  <view class="search-section">
+    <view class="search-filter-bar">
+      <view class="search-box">
+        <t-search 
+          placeholder="搜索车型、VIN码..."
+          bind:change="onSearchChange"
+          bind:submit="onSearchSubmit"
+        />
       </view>
-      <view class="type-info">
-        <view class="type-name">鸿日车库存</view>
-        <view class="type-desc">VIN码、车型系列、配置等</view>
-        <view class="type-count">{{inventoryCount.hongri}}辆在库</view>
-      </view>
-      <view class="type-actions">
-        <t-tag theme="primary" size="small">查看</t-tag>
-        <t-tag wx:if="{{canEdit}}" theme="success" size="small">编辑</t-tag>
-        <t-tag wx:if="{{canAdd}}" theme="warning" size="small">批量添加</t-tag>
-      </view>
-    </view>
-
-    <view class="inventory-type-item" bind:tap="navigateToSecondhand">
-      <view class="type-icon">
-        <t-icon name="swap" size="40px" color="#FF9800"></t-icon>
-      </view>
-      <view class="type-info">
-        <view class="type-name">二手车库存</view>
-        <view class="type-desc">旧车折抵自动添加</view>
-        <view class="type-count">{{inventoryCount.secondhand}}辆在库</view>
-      </view>
-      <view class="type-actions">
-        <t-tag theme="primary" size="small">查看</t-tag>
-        <t-tag wx:if="{{canEdit}}" theme="success" size="small">编辑</t-tag>
-      </view>
-    </view>
-
-    <view class="inventory-type-item" bind:tap="navigateToOther">
-      <view class="type-icon">
-        <t-icon name="backup" size="40px" color="#4CAF50"></t-icon>
-      </view>
-      <view class="type-info">
-        <view class="type-name">其他品牌车库存</view>
-        <view class="type-desc">其他品牌车辆信息</view>
-        <view class="type-count">{{inventoryCount.other}}辆在库</view>
-      </view>
-      <view class="type-actions">
-        <t-tag theme="primary" size="small">查看</t-tag>
-        <t-tag wx:if="{{canEdit}}" theme="success" size="small">编辑</t-tag>
-        <t-tag wx:if="{{canAdd}}" theme="warning" size="small">批量添加</t-tag>
+      <view class="filter-btn" bind:tap="onFilterTap">
+        <t-icon name="filter" size="18px" color="#666"></t-icon>
       </view>
     </view>
   </view>
 
-  <!-- 权限说明 -->
-  <view class="permission-notice">
-    <t-icon name="info-circle" size="16px" color="#666"></t-icon>
-    <text class="notice-text">
-      <text wx:if="{{userRole === 'owner'}}">您拥有所有库存的完整管理权限</text>
-      <text wx:elif="{{userRole === 'admin'}}">您可以查看和编辑所有库存信息</text>
-      <text wx:elif="{{userRole === 'sales'}}">您只能查看库存信息</text>
-    </text>
+  <!-- 库存类型卡片 - 按照销售出库管理页面设计 -->
+  <view class="inventory-grid">
+    <!-- 鸿日车库存 -->
+    <view class="inventory-card hongri-card" bind:tap="navigateToHongri">
+      <view class="type-icon hongri">
+        <view class="hongri-logo">
+          <view class="logo-circle">
+            <view class="logo-arrow"></view>
+          </view>
+        </view>
+      </view>
+      <view class="type-content">
+        <view class="type-header">
+          <view class="type-name">鸿日车库存</view>
+        </view>
+        <view class="type-desc">VIN码、车型系列、配置管理</view>
+        <view class="type-features">
+          <text class="feature-tag">{{inventoryCount.hongri}}辆在库</text>
+          <button wx:if="{{canAdd}}" class="batch-import-button" catch:tap="onBatchImportTap">批量入库</button>
+        </view>
+      </view>
+      <view class="type-arrow">
+        <t-icon name="chevron-right" size="20px" color="#999"></t-icon>
+      </view>
+    </view>
+
+    <!-- 二手车库存 -->
+    <view class="inventory-card secondhand-card" bind:tap="navigateToSecondhand">
+      <view class="type-icon secondhand">
+        <t-icon name="refresh" size="40px" color="#ff9800"></t-icon>
+      </view>
+      <view class="type-content">
+        <view class="type-header">
+          <view class="type-name">二手车库存</view>
+        </view>
+        <view class="type-desc">旧车折抵自动添加管理</view>
+        <view class="type-features">
+          <text class="feature-tag">{{inventoryCount.secondhand}}辆在库</text>
+        </view>
+      </view>
+      <view class="type-arrow">
+        <t-icon name="chevron-right" size="20px" color="#999"></t-icon>
+      </view>
+    </view>
+
+    <!-- 其他品牌车库存 -->
+    <view class="inventory-card other-card" bind:tap="navigateToOther">
+      <view class="type-icon other">
+        <t-icon name="layers" size="40px" color="#52c41a"></t-icon>
+      </view>
+      <view class="type-content">
+        <view class="type-header">
+          <view class="type-name">其他品牌库存</view>
+        </view>
+        <view class="type-desc">非鸿日品牌车辆信息</view>
+        <view class="type-features">
+          <text class="feature-tag">{{inventoryCount.other}}辆在库</text>
+          <button wx:if="{{canAdd}}" class="batch-import-button" catch:tap="onOtherBatchImportTap">批量入库</button>
+        </view>
+      </view>
+      <view class="type-arrow">
+        <t-icon name="chevron-right" size="20px" color="#999"></t-icon>
+      </view>
+    </view>
   </view>
 </view> 

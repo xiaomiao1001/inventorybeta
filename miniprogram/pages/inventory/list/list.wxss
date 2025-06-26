@@ -1,8 +1,12 @@
 /* pages/inventory/list/list.wxss */
-.container {
-  padding: 20rpx;
+page {
   background-color: #f5f5f5;
-  min-height: 100vh;
+}
+
+.container {
+  background-color: #f5f5f5;              /* 与主页保持一致的背景颜色 */
+  /* 移除 min-height: 100vh; 让容器高度自适应内容 */
+  padding: 0;                             /* 页面级别：无内边距 */
 }
 
 /* 页面标题样式 */
@@ -30,17 +34,18 @@
 .inventory-types {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: 15rpx;                             /* 调整为统一间距 */
 }
 
 .inventory-type-item {
   display: flex;
   align-items: center;
   background: white;
-  border-radius: 16rpx;
-  padding: 30rpx;
+  border-radius: 16rpx;                   /* 调整为统一圆角 */
+  padding: 30rpx;                         /* 调整为统一内边距 */
   box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
+  margin-bottom: 20rpx;                   /* 单个卡片级别：底部间距 */
 }
 
 .inventory-type-item:active {
@@ -49,27 +54,48 @@
 }
 
 .type-icon {
-  margin-right: 30rpx;
   padding: 20rpx;
-  background: #f8f9ff;
   border-radius: 50%;
+  margin-right: 20rpx;
+  margin-top: 10rpx;
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.type-icon.hongri {
+  background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+}
+
+.type-icon.secondhand {
+  background: linear-gradient(135deg, #fff3e0, #ffcc80);
+}
+
+.type-icon.other {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
 }
 
 .type-info {
-  flex: 1;
+  flex: 1;                                /* 内容区域：占据剩余空间 */
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;                              /* 内容区域：元素间距8rpx */
 }
 
 .type-name {
   font-size: 32rpx;
   font-weight: bold;
   color: #333;
-  margin-bottom: 8rpx;
+  margin-right: 20rpx;
 }
 
 .type-desc {
   font-size: 26rpx;
   color: #666;
-  margin-bottom: 8rpx;
+  line-height: 1.6;
+  margin-bottom: 15rpx;
 }
 
 .type-count {
@@ -83,6 +109,8 @@
   flex-direction: column;
   gap: 8rpx;
   align-items: flex-end;
+  width: 32rpx;                           /* 右侧操作区域：32rpx */
+  margin-left: 16rpx;                     /* 左边距：16rpx */
 }
 
 /* 权限说明样式 */
@@ -93,6 +121,7 @@
   border: 1rpx solid #d6ebff;
   border-radius: 12rpx;
   padding: 20rpx;
+  margin: 12rpx;                          /* 调整外边距 */
   margin-top: 30rpx;
 }
 
@@ -100,4 +129,577 @@
   font-size: 24rpx;
   color: #666;
   margin-left: 10rpx;
+}
+
+/* ===== 极简文字版导航 ===== */
+.header-modern {
+  position: absolute;
+  top: 30rpx;
+  left: 30rpx;
+  z-index: 100;
+  /* 移除所有装饰样式 */
+}
+
+/* 确保所有子元素对齐 */
+.breadcrumb,
+.header-title {
+  position: relative;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6rpx;
+  gap: 8rpx;
+}
+
+.breadcrumb-item {
+  font-size: 20rpx;
+  color: #999;
+  font-weight: 400;
+}
+
+.breadcrumb-current {
+  font-size: 20rpx;
+  color: #4285f4;
+  font-weight: 500;
+}
+
+.header-title {
+  margin-bottom: 0;
+}
+
+.title-main {
+  display: block;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #1a1a1a;
+  line-height: 1.2;
+  margin-bottom: 0;
+  letter-spacing: -0.5px;
+}
+
+/* ===== 独立搜索区域样式 ===== */
+.search-section {
+  margin: 120rpx 12rpx 20rpx 12rpx;  /* 为导航文字腾出空间 */
+  background: white;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+}
+
+.search-filter-container {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.search-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin: 0 !important;                   /* 所有外边距设为0 */
+  padding: 0 !important;                  /* 所有内边距设为0 */
+  padding-bottom: 10rpx !important;      /* 调整底部内边距为10rpx，与顶部边距组成20rpx */
+}
+
+.search-box {
+  flex: 1;
+  margin: 0 !important;                   /* 搜索框容器外边距为0 */
+  padding: 0 !important;                  /* 搜索框容器内边距为0 */
+}
+
+/* 强制覆盖TDesign搜索组件的所有边距 */
+.search-box .t-search,
+.search-box .t-search__input-container,
+.search-box .t-search__wrapper {
+  background: #f7f8fa !important;
+  border-radius: 10rpx !important;
+  border: none !important;
+  height: 64rpx !important;
+  margin: 0 !important;                   /* 强制所有边距为0 */
+  margin-bottom: 0 !important;            /* 强制底部边距为0 */
+  padding-bottom: 0 !important;           /* 强制底部内边距为0 */
+}
+
+.filter-btn {
+  width: 64rpx;
+  height: 64rpx;
+  background: #f7f8fa;
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:active {
+  background: #e8eaed;
+  transform: scale(0.95);
+}
+
+/* 批量导入按钮 */
+.batch-import-btn {
+  width: 64rpx;
+  height: 64rpx;
+  background: rgba(66, 133, 244, 0.1);
+  border-radius: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-left: 8rpx;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.batch-import-btn:active {
+  background: rgba(66, 133, 244, 0.2);
+  transform: scale(0.95);
+}
+
+
+/* ===== 库存卡片网格 - 按照销售出库管理页面设计 ===== */
+.inventory-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  margin: 12rpx;
+  margin-top: 0;  /* 去掉顶部边距，因为搜索区域已经有了间距 */
+  margin-bottom: 30rpx;
+}
+
+.inventory-card {
+  display: flex;
+  align-items: flex-start;
+  background: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.inventory-card:active {
+  transform: translateY(-2rpx);
+  box-shadow: 0 8rpx 25rpx rgba(0, 0, 0, 0.15);
+}
+
+/* 移除卡片特色渐变背景 - 简化设计 */
+.hongri-card::before,
+.secondhand-card::before,
+.other-card::before {
+  display: none;                           /* 隐藏背景渐变 */
+}
+
+/* ===== 权限提示现代化 ===== */
+.permission-modern {
+  margin: 12rpx !important;                /* 卡片容器级别：外边距12rpx */
+  margin-bottom: 30rpx !important;         /* 底部边距：30rpx */
+  background: linear-gradient(135deg, #f8f9ff, #ffffff);
+  border: 1px solid rgba(66, 133, 244, 0.1);
+  border-radius: 16rpx;                    /* 调整为统一圆角 */
+  padding: 30rpx;                          /* 调整为统一内边距 */
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.permission-icon {
+  width: 80rpx;                            /* 图标宽度：80rpx */
+  height: 80rpx;                           /* 图标高度：80rpx */
+  background: rgba(66, 133, 244, 0.1);
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: 24rpx;                     /* 图标右边距：24rpx */
+}
+
+.permission-text {
+  font-size: 26rpx;
+  color: #4285f4;
+  font-weight: 500;
+  line-height: 1.4;
+  flex: 1;                                 /* 内容区域：占据剩余空间 */
+}
+
+/* ===== 响应式适配 ===== */
+/* 大屏幕优化 */
+@media screen and (min-width: 768px) {
+  .inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24rpx;
+  }
+}
+
+/* ===== 动画效果 ===== */
+@keyframes cardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.inventory-card:nth-child(1) { animation-delay: 0.1s; }
+.inventory-card:nth-child(2) { animation-delay: 0.2s; }
+.inventory-card:nth-child(3) { animation-delay: 0.3s; }
+
+/* ===== 无障碍优化 ===== */
+.inventory-card:focus {
+  outline: 2px solid #4285f4;
+  outline-offset: 4rpx;
+}
+
+/* ===== 深色模式支持 ===== */
+@media (prefers-color-scheme: dark) {
+  .container {
+    background: linear-gradient(180deg, #1a1a1a 0%, #0f0f0f 40%);
+  }
+  
+  .header-modern {
+    background: #1e1e1e;
+    border-bottom: 1px solid #333;
+  }
+  
+  .title-main {
+    color: #ffffff;
+  }
+  
+  .inventory-card {
+    background: #1e1e1e;
+    border: 1px solid #333;
+  }
+  
+  .card-title {
+    color: #ffffff;
+  }
+} 
+
+/* ===== 批量导入弹窗样式 ===== */
+
+/* TDesign弹窗组件覆盖 */
+.t-popup {
+  z-index: 9999 !important;
+}
+
+.t-popup__content {
+  z-index: 10000 !important;
+}
+
+.batch-import-popup {
+  width: 90vw;
+  max-width: 700rpx;                      /* 增加最大宽度 */
+  max-height: 85vh;                       /* 限制最大高度 */
+  background: white;
+  border-radius: 20rpx;
+  overflow: hidden;
+  position: relative;
+  z-index: 10001;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);  /* 增加阴影效果 */
+}
+
+/* 弹窗头部 */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32rpx 32rpx 24rpx;
+  border-bottom: 1px solid #f0f0f0;
+  background: white;
+  position: sticky;                       /* 头部固定 */
+  top: 0;
+  z-index: 10002;
+}
+
+.popup-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.popup-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.popup-close:active {
+  background: #f5f5f5;
+  transform: scale(0.95);
+}
+
+/* 弹窗内容区域 */
+.popup-content {
+  max-height: 60vh;                       /* 限制内容区域高度 */
+  overflow-y: auto;                       /* 允许滚动 */
+}
+
+/* 数据格式说明区域 */
+.format-section {
+  padding: 32rpx;
+  border-bottom: 1px solid #f0f0f0;
+  background: white;
+}
+
+.format-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16rpx;
+}
+
+.format-desc {
+  font-size: 26rpx;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 24rpx;
+}
+
+.format-example {
+  background: #f8f9fa;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  border-left: 4rpx solid #4285f4;
+}
+
+.format-header {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12rpx;
+  line-height: 1.4;
+  word-break: break-all;                  /* 允许长文本换行 */
+}
+
+.format-sample {
+  display: block;
+  font-size: 22rpx;
+  color: #666;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+/* 粘贴数据区域 */
+.paste-section {
+  padding: 32rpx;
+  background: white;
+}
+
+.paste-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16rpx;
+}
+
+.paste-textarea {
+  width: 100%;
+  height: 300rpx;
+  background: #f8f9fa;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 24rpx;
+  color: #333;
+  line-height: 1.5;
+  box-sizing: border-box;
+  resize: none;
+  transition: all 0.2s ease;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;  /* 使用等宽字体 */
+}
+
+.paste-textarea:focus {
+  border-color: #4285f4;
+  background: #fff;
+  outline: none;
+}
+
+.paste-textarea::placeholder {
+  color: #999;
+}
+
+/* 操作按钮区域 */
+.popup-actions {
+  display: flex;
+  gap: 16rpx;
+  padding: 24rpx 32rpx 32rpx;
+  background: #fafafa;
+  position: sticky;                       /* 按钮区域固定 */
+  bottom: 0;
+  z-index: 10002;
+  border-top: 1px solid #f0f0f0;
+}
+
+.cancel-btn {
+  flex: 1;
+  height: 88rpx !important;
+  border-radius: 12rpx !important;
+  font-size: 28rpx !important;
+  border: 1px solid #d9d9d9 !important;
+  background: white !important;
+  color: #666 !important;
+}
+
+.cancel-btn:active {
+  background: #f5f5f5 !important;
+}
+
+.parse-btn {
+  flex: 2;
+  height: 88rpx !important;
+  border-radius: 12rpx !important;
+  font-size: 28rpx !important;
+  background: linear-gradient(135deg, #4285f4, #1976d2) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.parse-btn:active {
+  background: linear-gradient(135deg, #1976d2, #1565c0) !important;
+}
+
+.parse-btn[disabled] {
+  background: #e0e0e0 !important;
+  color: #999 !important;
+  cursor: not-allowed;
+}
+
+/* 响应式适配 */
+@media screen and (max-width: 750rpx) {
+  .batch-import-popup {
+    width: 95vw;
+    max-height: 90vh;
+  }
+  
+  .popup-actions {
+    flex-direction: column;
+    gap: 12rpx;
+  }
+  
+  .cancel-btn,
+  .parse-btn {
+    flex: none;
+    height: 80rpx !important;
+  }
+  
+  .paste-textarea {
+    height: 250rpx;
+  }
+} 
+
+/* ===== 箭头区域 ===== */
+.type-arrow {
+  margin-left: 10rpx;
+  margin-top: 40rpx;
+}
+
+/* ===== 卡片内容区域 ===== */
+.type-content {
+  flex: 1;
+}
+
+.type-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+
+.type-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  align-items: center;  /* 让按钮和文字垂直居中对齐 */
+}
+
+.feature-tag {
+  padding: 6rpx 12rpx;
+  background: #f0f2f5;
+  border-radius: 20rpx;
+  font-size: 20rpx;
+  color: #666;
+}
+
+.feature-tag.primary {
+  background: linear-gradient(45deg, #4285f4, #1976d2);
+  color: white;
+  cursor: pointer;
+}
+
+.feature-tag.primary:active {
+  transform: scale(0.95);
+} 
+
+/* 鸿日logo样式 - 适配新的图标容器 */
+.hongri-logo {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-circle {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #4CAF50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.logo-arrow {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 10px solid #4CAF50;
+  transform: rotate(-45deg);
+} 
+
+/* ===== 批量入库长方形按钮样式 ===== */
+.batch-import-button {
+  padding: 8rpx 16rpx;
+  background: linear-gradient(45deg, #4285f4, #1976d2);
+  color: white;
+  border: none;
+  border-radius: 8rpx;
+  font-size: 20rpx;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: 12rpx;
+}
+
+.batch-import-button:active {
+  transform: scale(0.95);
+  background: linear-gradient(45deg, #1976d2, #1565c0);
+}
+
+.type-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  align-items: center;  /* 让按钮和文字垂直居中对齐 */
+}
+
+.feature-tag {
+  padding: 6rpx 12rpx;
+  background: #f0f2f5;
+  border-radius: 20rpx;
+  font-size: 20rpx;
+  color: #666;
 } 

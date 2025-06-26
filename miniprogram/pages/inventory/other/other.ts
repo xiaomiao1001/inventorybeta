@@ -67,15 +67,77 @@ Page({
   } as IOtherData,
 
   onLoad() {
-    this.initInventoryData();
+    this.loadInventoryData();
   },
 
-  initInventoryData() {
-    // 标注：这里应该调用API获取其他品牌车库存数据
-    const { inventoryList } = this.data;
-    this.setData({
-      filteredInventory: inventoryList
-    });
+  onShow() {
+    // 每次页面显示时重新加载数据，以获取最新的库存信息
+    this.loadInventoryData();
+  },
+
+  // 加载库存数据
+  async loadInventoryData() {
+    try {
+      wx.showLoading({
+        title: '加载中...'
+      });
+
+      const result = await wx.cloud.callFunction({
+        name: 'car-inventory',
+        data: {
+          action: 'query',
+          data: {
+            page: 1,
+            limit: 100 // 加载前100条数据
+          }
+        }
+      });
+
+      wx.hideLoading();
+
+      if (result.result.code === 0) {
+        // 转换数据格式以匹配界面显示
+        const inventoryList = result.result.data.map((item: any) => ({
+          vin: item.VIN,
+          series: item.brand,
+          model: item.model,
+          config: item.brand + ' ' + item.model, // 组合显示
+          color: item.color,
+          factoryDate: item.production_date,
+          arrivalDate: item.created_at ? item.created_at.substring(0, 10) : item.production_date,
+          status: item.stock_quantity > 0 ? '在库' : '已售出'
+        }));
+
+        this.setData({
+          inventoryList: inventoryList,
+          filteredInventory: inventoryList
+        });
+      } else {
+        console.error('加载库存数据失败:', result.result.message);
+        // 如果数据库查询失败，使用模拟数据
+        this.setData({
+          filteredInventory: this.data.inventoryList
+        });
+        
+        wx.showToast({
+          title: '数据加载失败，显示示例数据',
+          icon: 'none'
+        });
+      }
+    } catch (error) {
+      wx.hideLoading();
+      console.error('调用云函数失败:', error);
+      
+      // 如果云函数调用失败，使用模拟数据
+      this.setData({
+        filteredInventory: this.data.inventoryList
+      });
+      
+      wx.showToast({
+        title: '网络错误，显示示例数据',
+        icon: 'none'
+      });
+    }
   },
 
   onSearchChange(e: any) {
@@ -120,6 +182,26 @@ Page({
     });
   },
 
+  // 批量导入按钮点击
+  onBatchImportTap() {
+    console.log('其他品牌批量导入按钮被点击');
+    
+    // 跳转到其他品牌专用批量入库页面
+    wx.navigateTo({
+      url: '/pages/inventory/batch-import/batch-import?type=other&title=其他品牌批量入库',
+      success: function() {
+        console.log('跳转到其他品牌批量入库页面成功');
+      },
+      fail: function(error) {
+        console.error('跳转到批量入库页面失败:', error);
+        wx.showToast({
+          title: '页面跳转失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
+
   viewDetail(e: any) {
     const item = e.currentTarget.dataset.item;
     wx.showModal({
@@ -132,5 +214,5 @@ Page({
     // wx.navigateTo({
     //   url: `/pages/inventory/detail/detail?vin=${item.vin}&type=other`
     // });
-  }
+  },
 }); 

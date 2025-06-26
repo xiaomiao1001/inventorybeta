@@ -1,0 +1,143 @@
+<view class="container">
+  <!-- 极简文字版导航 -->
+  <view class="header-modern">
+    <view class="breadcrumb">
+      <text class="breadcrumb-item">首页</text>
+      <t-icon name="chevron-right" size="12px" color="#999"></t-icon>
+      <text class="breadcrumb-current">库存管理</text>
+    </view>
+    <view class="header-title">
+      <text class="title-main">{{pageTitle}}</text>
+    </view>
+  </view>
+
+  <!-- 页面内容 -->
+  <scroll-view class="content" scroll-y="true">
+    <!-- 数据格式说明 -->
+    <view class="format-section">
+      <view class="section-header">
+        <t-icon name="info-circle" size="18px" color="#4285f4"></t-icon>
+        <text class="section-title">数据格式</text>
+      </view>
+      <view class="format-desc">
+        {{formatDescription}}
+      </view>
+      
+      <view class="format-example">
+        <view class="example-header">
+          <text class="header-text">{{exampleHeader}}</text>
+        </view>
+        <view class="example-content">
+          <text class="sample-text">{{exampleContent}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 数据输入区域 -->
+    <view class="input-section">
+      <view class="section-header">
+        <t-icon name="file-paste" size="18px" color="#4285f4"></t-icon>
+        <text class="section-title">粘贴数据</text>
+        <view class="input-counter">
+          <text class="counter-text">{{batchImportData.length}}/10000</text>
+        </view>
+      </view>
+      
+      <textarea 
+        class="data-textarea"
+        placeholder="{{placeholderText}}"
+        value="{{batchImportData}}"
+        bind:input="onDataInput"
+        bind:focus="onTextareaFocus"
+        bind:blur="onTextareaBlur"
+        maxlength="10000"
+        auto-height="{{true}}"
+        show-count="{{false}}"
+      ></textarea>
+      
+      <!-- 快速操作 -->
+      <view class="quick-actions">
+        <view class="action-btn" bind:tap="clearData">
+          <t-icon name="delete" size="16px" color="#ff4757"></t-icon>
+          <text class="btn-text">清空</text>
+        </view>
+        <view class="action-btn" bind:tap="pasteFromClipboard">
+          <t-icon name="file-paste" size="16px" color="#4285f4"></t-icon>
+          <text class="btn-text">粘贴</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 解析结果 -->
+    <view class="result-section" wx:if="{{parseResult.length > 0 || parseErrors.length > 0}}">
+      <view class="section-header">
+        <t-icon name="check-circle" size="18px" color="{{parseErrors.length > 0 ? '#ff4757' : '#52c41a'}}"></t-icon>
+        <text class="section-title">解析结果</text>
+      </view>
+      
+      <!-- 成功解析的数据 -->
+      <view class="success-result" wx:if="{{parseResult.length > 0}}">
+        <view class="result-summary">
+          <text class="summary-text">成功解析 {{parseResult.length}} 条数据</text>
+        </view>
+        <view class="result-preview">
+          <view class="preview-item" wx:for="{{parseResult}}" wx:key="index" wx:if="{{index < 3}}">
+            <text class="preview-vin">{{item.vin}}</text>
+            <text class="preview-model">{{item.series}} {{item.model}}</text>
+            <text class="preview-config">{{item.config}} {{item.color}}</text>
+          </view>
+          <view class="more-indicator" wx:if="{{parseResult.length > 3}}">
+            <text class="more-text">还有 {{parseResult.length - 3}} 条数据...</text>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 解析错误 -->
+      <view class="error-result" wx:if="{{parseErrors.length > 0}}">
+        <view class="error-summary">
+          <text class="error-text">发现 {{parseErrors.length}} 个错误</text>
+        </view>
+        <view class="error-list">
+          <view class="error-item" wx:for="{{parseErrors}}" wx:key="index" wx:if="{{index < 5}}">
+            <text class="error-msg">{{item}}</text>
+          </view>
+          <view class="more-errors" wx:if="{{parseErrors.length > 5}}">
+            <text class="more-text">还有 {{parseErrors.length - 5}} 个错误...</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-actions">
+    <view class="action-info">
+      <text class="info-text" wx:if="{{dataLineCount > 0}}">
+        {{dataLineCount}} 行数据
+      </text>
+      <text class="info-text" wx:else>请输入数据</text>
+    </view>
+    <view class="action-buttons">
+      <t-button 
+        theme="default" 
+        size="large" 
+        bind:tap="parseData"
+        disabled="{{!canParse || isLoading}}"
+        loading="{{isLoading && loadingType === 'parse'}}"
+        class="parse-btn"
+      >
+        解析数据
+      </t-button>
+      <t-button 
+        theme="primary" 
+        size="large" 
+        bind:tap="importData"
+        disabled="{{parseResult.length === 0 || isLoading}}"
+        loading="{{isLoading && loadingType === 'import'}}"
+        class="import-btn"
+      >
+        导入 ({{parseResult.length}})
+      </t-button>
+    </view>
+  </view>
+</view> 

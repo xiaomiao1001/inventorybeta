@@ -1,469 +1,739 @@
 /**index.wxss**/
-.container {
-  padding: 10rpx 20rpx 20rpx 20rpx;
+page {
   background-color: #f5f5f5;
-  min-height: 100vh;
 }
 
-/* 精简的头部样式 - 只占5% */
-.compact-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  padding: 15rpx 20rpx;
-  border-radius: 12rpx;
-  margin-bottom: 15rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-  height: 80rpx;
+.container {
+  padding: 0 !important;                   /* 调整为和出库页面一样的无边距 */
+  background-color: #f5f5f5 !important;
+  min-height: 100vh !important;
+  position: relative !important;
 }
 
-.user-compact {
-  display: flex;
-  align-items: center;
-  gap: 15rpx;
-}
-
-.welcome-compact {
-  font-size: 24rpx;
-  color: #333;
-  font-weight: 500;
-}
-
-.role-tag-compact {
-  display: inline-block;
-}
-
-.role-text-compact {
-  padding: 4rpx 12rpx;
-  border-radius: 12rpx;
-  font-size: 20rpx;
-  color: white;
-}
-
-.role-text-compact.owner {
-  background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
-}
-
-.role-text-compact.admin {
-  background: linear-gradient(45deg, #4ECDC4, #6FDDDB);
-}
-
-.role-text-compact.sales {
-  background: linear-gradient(45deg, #45B7D1, #6BC5E8);
-}
-
-.role-text-compact.dealer {
-  background: linear-gradient(45deg, #96CEB4, #B8DAC6);
-}
-
-.logout-compact {
-  padding: 10rpx;
-  background: #f8f9fa;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-}
-
-.logout-compact:active {
-  background: #e9ecef;
-  transform: scale(0.95);
-}
-
-/* 精简的搜索框样式 */
-.search-compact {
-  margin-bottom: 20rpx;
-}
-
-/* 原有用户信息头部样式保留（用于其他角色） */
+/* 强制隐藏所有旧样式 */
+.compact-header,
+.search-compact,
+.section,
 .header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: white;
-  padding: 30rpx;
-  border-radius: 20rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+  display: none !important;
+  visibility: hidden !important;
 }
 
-.user-info {
-  flex: 1;
+/* 右上角用户信息样式 - 调整位置适应窄边距 */
+.top-right-header {
+  position: absolute !important;
+  top: 8rpx !important;
+  right: 12rpx !important;                 /* 调整右边距为12rpx */
+  z-index: 1000 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8rpx !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  padding: 8rpx 12rpx !important;
+  border-radius: 20rpx !important;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: blur(10rpx) !important;
 }
 
-.welcome-text {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10rpx;
+/* 添加用户信息头部和搜索框之间的间距 */
+.header-spacing {
+  height: 20rpx !important;
+  display: block !important;
 }
 
-.role-tag {
-  display: inline-block;
+.user-mini {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6rpx !important;
 }
 
-.role-text {
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
-  font-size: 24rpx;
-  color: white;
+.welcome-mini {
+  font-size: 20rpx !important;
+  color: #666 !important;
+  font-weight: 400 !important;
 }
 
-.role-text.owner {
-  background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+.role-tag-mini {
+  display: inline-block !important;
 }
 
-.role-text.admin {
-  background: linear-gradient(45deg, #4ECDC4, #6FDDDB);
+.role-text-mini {
+  padding: 2rpx 8rpx !important;
+  border-radius: 8rpx !important;
+  font-size: 18rpx !important;
+  color: white !important;
+  opacity: 0.9 !important;
 }
 
-.role-text.sales {
-  background: linear-gradient(45deg, #45B7D1, #6BC5E8);
+.role-text-mini.owner {
+  background: linear-gradient(45deg, #FF6B6B, #FF8E8E) !important;
 }
 
-.role-text.dealer {
-  background: linear-gradient(45deg, #96CEB4, #B8DAC6);
+.role-text-mini.admin {
+  background: linear-gradient(45deg, #4ECDC4, #6FDDDB) !important;
 }
 
-.logout-btn {
-  padding: 20rpx;
-  background: #f8f9fa;
-  border-radius: 50%;
-  transition: all 0.3s ease;
+.role-text-mini.sales {
+  background: linear-gradient(45deg, #45B7D1, #6BC5E8) !important;
 }
 
-.logout-btn:active {
-  background: #e9ecef;
-  transform: scale(0.95);
+.role-text-mini.dealer {
+  background: linear-gradient(45deg, #96CEB4, #B8DAC6) !important;
 }
 
-/* 搜索框样式 */
-.search-section {
-  margin-bottom: 30rpx;
+.logout-mini {
+  padding: 6rpx !important;
+  background: rgba(248, 249, 250, 0.8) !important;
+  border-radius: 50% !important;
+  transition: all 0.3s ease !important;
 }
 
-/* 功能模块样式 */
-.section {
-  background: white;
-  border-radius: 20rpx;
-  padding: 30rpx;
-  margin-bottom: 30rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+.logout-mini:active {
+  background: rgba(233, 236, 239, 0.8) !important;
+  transform: scale(0.9) !important;
 }
 
-.section-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 30rpx;
-  display: flex;
-  align-items: center;
+/* 优化后的搜索框样式 - 调整边距与出库页面一致 */
+.search-refined {
+  margin: 80rpx 12rpx 15rpx 12rpx !important;  /* 增加顶部边距从55rpx到80rpx，避免与用户信息重叠 */
+  padding: 0 !important;
+  display: block !important;
+  visibility: visible !important;
 }
 
-.section-title::before {
-  content: '';
-  width: 8rpx;
-  height: 32rpx;
-  background: linear-gradient(45deg, #4285f4, #6FA8F5);
-  border-radius: 4rpx;
-  margin-right: 16rpx;
+.search-wrapper-refined {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12rpx !important;
+  background: white !important;
+  border-radius: 12rpx !important;
+  padding: 8rpx !important;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06) !important;
+  height: 80rpx !important;
 }
 
-/* 所有者宽功能按钮样式 */
-.function-grid-wide {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20rpx;
+.search-wrapper-refined .t-search {
+  flex: 1 !important;
+  border: none !important;
+  box-shadow: none !important;
+  height: 100% !important;
 }
 
-.function-item-wide {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 50rpx 30rpx;
-  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-  border-radius: 20rpx;
-  border: 2rpx solid #f0f2f5;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  min-height: 160rpx;
+.scan-btn-refined {
+  width: 56rpx !important;
+  height: 56rpx !important;
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f4ff 100%) !important;
+  border-radius: 10rpx !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.3s ease !important;
+  flex-shrink: 0 !important;
 }
 
-.function-item-wide::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.1) 0%, rgba(111, 168, 245, 0.05) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+.scan-btn-refined:active {
+  transform: scale(0.95) !important;
+  background: linear-gradient(135deg, #e6f4ff 0%, #d6e9ff 100%) !important;
 }
 
-.function-item-wide:active::before {
-  opacity: 1;
+/* 统一的卡片容器 - 调整为出库页面的窄边距 */
+.cards-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 15rpx !important;
+  visibility: visible !important;
+  margin: 12rpx !important;              /* 和出库页面一样的窄边距 */
+  margin-bottom: 30rpx !important;       /* 底部稍大的边距 */
 }
 
-.function-item-wide:active {
-  transform: scale(0.98);
-  border-color: #4285f4;
+/* 统一的卡片样式 - 增加高度 */
+.unified-card {
+  background: white !important;
+  border-radius: 16rpx !important;
+  padding: 30rpx !important;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06) !important;
+  min-height: 280rpx !important;
+  display: flex !important;
+  flex-direction: column !important;
+  visibility: visible !important;
 }
 
-.function-text-wide {
-  font-size: 32rpx;
-  color: #333;
-  margin-top: 20rpx;
-  text-align: center;
-  font-weight: 600;
+.card-title {
+  font-size: 28rpx !important;
+  font-weight: 600 !important;
+  color: #333 !important;
+  margin-bottom: 25rpx !important;
+  display: flex !important;
+  align-items: center !important;
+  flex-shrink: 0 !important;
 }
 
-/* 原有功能网格布局 */
-.function-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20rpx;
+.card-title::before {
+  content: '' !important;
+  width: 6rpx !important;
+  height: 28rpx !important;
+  background: linear-gradient(45deg, #4285f4, #6FA8F5) !important;
+  border-radius: 3rpx !important;
+  margin-right: 12rpx !important;
 }
 
-.function-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40rpx 20rpx;
-  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
-  border-radius: 16rpx;
-  border: 2rpx solid #f0f2f5;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+.card-content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
 }
 
-.function-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(66, 133, 244, 0.1) 0%, rgba(111, 168, 245, 0.05) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+/* 统一的功能网格样式 - 增加高度 */
+.function-grid-unified {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 15rpx !important;
+  min-height: 200rpx !important;
 }
 
-.function-item:active::before {
-  opacity: 1;
+.function-item-unified {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 35rpx 15rpx !important;
+  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%) !important;
+  border-radius: 16rpx !important;
+  border: 2rpx solid #f0f2f5 !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 140rpx !important;
 }
 
-.function-item:active {
-  transform: scale(0.98);
-  border-color: #4285f4;
+.function-item-unified::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: linear-gradient(135deg, rgba(66, 133, 244, 0.08) 0%, rgba(111, 168, 245, 0.04) 100%) !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
 }
 
-.function-text {
-  font-size: 28rpx;
-  color: #333;
-  margin-top: 20rpx;
-  text-align: center;
-  font-weight: 500;
+.function-item-unified:active::before {
+  opacity: 1 !important;
 }
 
-/* 经销商提示样式 */
-.dealer-notice {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 30rpx;
-  background: linear-gradient(135deg, #FFF3E0 0%, #FFECB3 100%);
-  border-radius: 16rpx;
-  margin-top: 20rpx;
+.function-item-unified:active {
+  transform: scale(0.98) !important;
+  border-color: #4285f4 !important;
+  box-shadow: 0 4rpx 12rpx rgba(66, 133, 244, 0.15) !important;
 }
 
-.notice-text {
-  font-size: 28rpx;
-  color: #FF8F00;
-  margin-left: 10rpx;
+.function-text-unified {
+  font-size: 26rpx !important;
+  color: #333 !important;
+  margin-top: 12rpx !important;
+  text-align: center !important;
+  font-weight: 500 !important;
+  line-height: 1.2 !important;
 }
 
-/* 横向库存概览样式 */
-.inventory-overview-horizontal {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20rpx;
+/* 经销商提示统一样式 */
+.dealer-notice-unified {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 20rpx !important;
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFECB3 100%) !important;
+  border-radius: 12rpx !important;
+  margin-top: 15rpx !important;
 }
 
-.inventory-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
-  border-radius: 20rpx;
-  padding: 30rpx 20rpx;
-  text-align: center;
-  border: 2rpx solid #e8f5e8;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+.notice-text-unified {
+  font-size: 22rpx !important;
+  color: #FF8F00 !important;
+  margin-left: 8rpx !important;
 }
 
-.inventory-card:active {
-  transform: translateY(-4rpx);
-  box-shadow: 0 12rpx 35rpx rgba(0, 0, 0, 0.15);
+/* 统一的库存网格样式 - 增加高度 */
+.inventory-grid-unified {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 15rpx !important;
+  min-height: 200rpx !important;
 }
 
-.inventory-card-header {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20rpx;
+.inventory-item-unified {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%) !important;
+  border-radius: 16rpx !important;
+  padding: 20rpx 12rpx !important;
+  text-align: center !important;
+  border: 2rpx solid #e8f5e8 !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+  min-height: 160rpx !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
 }
 
-.inventory-icon {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.inventory-item-unified:active {
+  transform: translateY(-2rpx) !important;
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.1) !important;
+}
+
+/* 库存状态样式 */
+.inventory-item-unified.stock-good {
+  border-color: #52c41a !important;
+  background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%) !important;
+}
+
+.inventory-item-unified.stock-warning {
+  border-color: #faad14 !important;
+  background: linear-gradient(135deg, #fffbe6 0%, #ffffff 100%) !important;
+}
+
+.inventory-item-unified.stock-low {
+  border-color: #ff4d4f !important;
+  background: linear-gradient(135deg, #fff2f0 0%, #ffffff 100%) !important;
+}
+
+.inventory-header-unified {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  margin-bottom: 8rpx !important;
+  flex-shrink: 0 !important;
+}
+
+.inventory-icon-unified {
+  width: 32rpx !important;
+  height: 32rpx !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08) !important;
 }
 
 .hongri-icon {
-  background: linear-gradient(135deg, #E8F5E8, #C8E6C9);
+  background: linear-gradient(135deg, #E8F5E8, #C8E6C9) !important;
 }
 
 .secondhand-icon {
-  background: linear-gradient(135deg, #FFF3E0, #FFE0B2);
+  background: linear-gradient(135deg, #FFF3E0, #FFE0B2) !important;
 }
 
 .others-icon {
-  background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
+  background: linear-gradient(135deg, #E3F2FD, #BBDEFB) !important;
 }
 
-.inventory-card-content {
-  text-align: center;
+/* 状态指示器 */
+.status-dot-unified {
+  width: 10rpx !important;
+  height: 10rpx !important;
+  border-radius: 50% !important;
 }
 
-.inventory-card-title {
-  font-size: 24rpx;
-  color: #666;
-  margin-bottom: 15rpx;
+.status-dot-unified.status-good {
+  background: #52c41a !important;
+  box-shadow: 0 0 0 3rpx rgba(82, 196, 26, 0.2) !important;
 }
 
-.inventory-card-number {
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #333;
-  line-height: 1;
-  margin-bottom: 5rpx;
+.status-dot-unified.status-warning {
+  background: #faad14 !important;
+  box-shadow: 0 0 0 3rpx rgba(250, 173, 20, 0.2) !important;
 }
 
-.inventory-card-unit {
-  font-size: 20rpx;
-  color: #999;
+.status-dot-unified.status-low {
+  background: #ff4d4f !important;
+  box-shadow: 0 0 0 3rpx rgba(255, 77, 79, 0.2) !important;
+  animation: pulse-mini 2s infinite !important;
 }
 
-/* 原有库存概览样式保留 */
-.inventory-overview {
-  display: flex;
-  flex-direction: column;
-  gap: 20rpx;
+@keyframes pulse-mini {
+  0% {
+    box-shadow: 0 0 0 3rpx rgba(255, 77, 79, 0.2) !important;
+  }
+  50% {
+    box-shadow: 0 0 0 6rpx rgba(255, 77, 79, 0.4) !important;
+  }
+  100% {
+    box-shadow: 0 0 0 3rpx rgba(255, 77, 79, 0.2) !important;
+  }
 }
 
-.inventory-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 30rpx;
-  background: linear-gradient(135deg, #f8fff8 0%, #ffffff 100%);
-  border-radius: 16rpx;
-  border: 2rpx solid #e8f5e8;
-  transition: all 0.3s ease;
+.inventory-content-unified {
+  text-align: center !important;
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
 }
 
-.inventory-item:active {
-  transform: translateY(-2rpx);
-  box-shadow: 0 8rpx 25rpx rgba(0, 0, 0, 0.15);
-  border-color: #4CAF50;
+.inventory-title-unified {
+  font-size: 20rpx !important;
+  color: #666 !important;
+  margin-bottom: 6rpx !important;
+  font-weight: 500 !important;
 }
 
-.inventory-name {
-  font-size: 30rpx;
-  color: #333;
-  font-weight: 500;
+.inventory-number-unified {
+  font-size: 36rpx !important;
+  font-weight: bold !important;
+  color: #333 !important;
+  line-height: 1 !important;
+  margin-bottom: 4rpx !important;
 }
 
-.inventory-count {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #4CAF50;
+.inventory-unit-unified {
+  font-size: 18rpx !important;
+  color: #999 !important;
 }
 
-.inventory-status {
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
-  font-size: 24rpx;
-  color: white;
+/* 统一的统计网格样式 - 增加高度 */
+.stats-grid-unified {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 15rpx !important;
+  min-height: 200rpx !important;
 }
 
-.inventory-status.available {
-  background: linear-gradient(45deg, #4CAF50, #66BB6A);
+.stats-item-unified {
+  text-align: center !important;
+  padding: 30rpx 15rpx !important;
+  background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 100%) !important;
+  border-radius: 16rpx !important;
+  border: 2rpx solid #e3f2fd !important;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  min-height: 140rpx !important;
 }
 
-/* 快速统计样式 */
-.stats-overview {
-  display: flex;
-  justify-content: space-between;
-  gap: 20rpx;
+.stats-label-unified {
+  font-size: 20rpx !important;
+  color: #666 !important;
+  margin-bottom: 8rpx !important;
 }
 
-.stats-item {
-  flex: 1;
-  text-align: center;
-  padding: 30rpx 20rpx;
-  background: linear-gradient(135deg, #f0f8ff 0%, #ffffff 100%);
-  border-radius: 16rpx;
-  border: 2rpx solid #e3f2fd;
+.stats-value-unified {
+  font-size: 32rpx !important;
+  font-weight: bold !important;
+  color: #2196F3 !important;
 }
 
-.stats-label {
-  font-size: 24rpx;
-  color: #666;
-  margin-bottom: 10rpx;
+/* 数据库测试区域样式 */
+.test-section {
+  margin: 30rpx 0rpx !important;
+  padding: 30rpx !important;
+  background: #f8f9fa !important;
+  border-radius: 16rpx !important;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.1) !important;
 }
 
-.stats-value {
-  font-size: 36rpx;
-  font-weight: bold;
-  color: #2196F3;
+.test-title {
+  font-size: 36rpx !important;
+  font-weight: bold !important;
+  color: #333 !important;
+  margin-bottom: 30rpx !important;
+  text-align: center !important;
+}
+
+.test-btn {
+  margin: 15rpx 0 !important;
+  border-radius: 12rpx !important;
+  font-size: 28rpx !important;
+}
+
+.test-result {
+  margin-top: 30rpx !important;
+  padding: 24rpx !important;
+  background: white !important;
+  border-radius: 12rpx !important;
+  border-left: 6rpx solid #007AFF !important;
+}
+
+.result-title {
+  font-weight: bold !important;
+  color: #333 !important;
+  font-size: 28rpx !important;
+}
+
+.result-content {
+  display: block !important;
+  margin: 12rpx 0 !important;
+  font-size: 26rpx !important;
+}
+
+.result-content.success {
+  color: #52c41a !important;
+}
+
+.result-content.error {
+  color: #ff4d4f !important;
+}
+
+.result-data {
+  margin-top: 15rpx !important;
+  padding: 15rpx !important;
+  background: #f5f5f5 !important;
+  border-radius: 8rpx !important;
+  font-size: 22rpx !important;
+  color: #666 !important;
+  word-break: break-all !important;
 }
 
 /* 响应式适配 */
 @media (max-width: 750rpx) {
-  .function-grid, .function-grid-wide {
-    grid-template-columns: 1fr;
+  .function-grid-unified {
+    grid-template-columns: 1fr !important;
   }
   
-  .inventory-overview-horizontal {
-    grid-template-columns: 1fr;
+  .inventory-grid-unified {
+    grid-template-columns: 1fr !important;
   }
   
-  .stats-overview {
-    flex-direction: column;
+  .stats-grid-unified {
+    grid-template-columns: 1fr !important;
   }
 }
 
 /* TDesign组件样式覆盖 */
 .t-search {
-  border-radius: 16rpx !important;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+  border-radius: 12rpx !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
-.t-grid {
-  border-radius: 16rpx !important;
-  overflow: hidden;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+/* ===== 统一卡片样式 (基于出库页面规格) ===== */
+
+/* 库存卡片容器 */
+.inventory-cards,
+.stats-cards {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 20rpx !important;
 }
 
-.t-cell-group {
-  border-radius: 16rpx !important;
-  overflow: hidden;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.08);
+/* 卡片主容器 - 完全按照出库页面的规格 */
+.sale-type-item {
+  /* 布局 */
+  display: flex;
+  align-items: flex-start;
+  
+  /* 尺寸和间距 */
+  padding: 30rpx;              /* 内边距：上下左右均为30rpx */
+  margin-bottom: 20rpx;        /* 卡片间距：20rpx */
+  
+  /* 外观 */
+  background: white;           /* 背景色：纯白 */
+  border-radius: 16rpx;        /* 圆角：16rpx */
+  
+  /* 阴影效果 */
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
+  
+  /* 交互效果 */
+  transition: all 0.3s ease;
+}
+
+/* 卡片按下效果 */
+.sale-type-item:active {
+  transform: translateY(-2rpx);
+  box-shadow: 0 8rpx 25rpx rgba(0, 0, 0, 0.15);
+}
+
+/* 左侧图标区域规格 */
+.type-icon {
+  /* 尺寸 */
+  width: 80rpx;               /* 图标容器宽度 */
+  height: 80rpx;              /* 图标容器高度 */
+  
+  /* 布局 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;             /* 不允许收缩 */
+  
+  /* 外观 - 统一为报表页面标准样式 */
+  border-radius: 50%;         /* 改为完全圆形 */
+  padding: 20rpx;             /* 统一内边距20rpx */
+  margin-right: 24rpx;        /* 右边距：24rpx */
+}
+
+/* 图标主题颜色 - 统一为报表页面的淡色渐变样式 */
+.hongri-inventory {
+  background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+}
+
+/* 鸿日logo样式 - 调整大小适配新的容器 */
+.hongri-logo {
+  width: 40px;                /* 统一为40px */
+  height: 40px;               /* 统一为40px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-circle {
+  width: 36px;                /* 按40px比例调整 */
+  height: 36px;               /* 按40px比例调整 */
+  border: 3px solid #4CAF50;  /* 使用px单位保持精确 */
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.logo-arrow {
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 10px solid #4CAF50;
+  transform: rotate(-45deg);
+}
+
+.secondhand-inventory {
+  background: linear-gradient(135deg, #fff3e0, #ffcc80);
+}
+
+.other-inventory {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+}
+
+.sales-stats {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+}
+
+.credit-stats {
+  background: linear-gradient(135deg, #fff3e0, #ffcc80);
+}
+
+.total-stats {
+  background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+}
+
+/* 内容区域规格 */
+.type-content {
+  /* 布局 */
+  flex: 1;                    /* 占据剩余空间 */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 8rpx;                  /* 内部元素间距：8rpx */
+}
+
+/* 卡片头部 */
+.type-header {
+  /* 布局 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6rpx;        /* 底部间距：6rpx */
+}
+
+/* 卡片标题 */
+.type-name {
+  /* 字体 */
+  font-size: 32rpx;           /* 字体大小：32rpx */
+  font-weight: 600;           /* 字体粗细：半粗体 */
+  color: #1a1a1a;             /* 字体颜色：深灰 */
+  line-height: 1.2;           /* 行高：1.2倍 */
+}
+
+/* 状态标签 */
+.type-badge {
+  /* 尺寸 */
+  padding: 4rpx 12rpx;        /* 内边距：上下4rpx，左右12rpx */
+  
+  /* 字体 */
+  font-size: 22rpx;           /* 字体大小：22rpx */
+  font-weight: 500;           /* 字体粗细：中等 */
+  color: white;               /* 字体颜色：白色 */
+  
+  /* 外观 */
+  border-radius: 20rpx;       /* 圆角：20rpx */
+  flex-shrink: 0;             /* 不允许收缩 */
+}
+
+/* 标签主题颜色 */
+.stock-good { background: linear-gradient(45deg, #4CAF50, #66BB6A); }
+.stock-warning { background: linear-gradient(45deg, #FF9800, #FFB74D); }
+.stock-low { background: linear-gradient(45deg, #F44336, #EF5350); }
+.sales-badge { background: linear-gradient(45deg, #4285f4, #6FA8F5); }
+.credit-badge { background: linear-gradient(45deg, #FF9800, #FFB74D); }
+.total-badge { background: linear-gradient(45deg, #52C41A, #73D13D); }
+
+/* 描述文字 */
+.type-desc {
+  /* 字体 */
+  font-size: 26rpx;           /* 字体大小：26rpx */
+  color: #666666;             /* 字体颜色：中灰 */
+  line-height: 1.4;           /* 行高：1.4倍 */
+  margin-bottom: 8rpx;        /* 底部间距：8rpx */
+}
+
+/* 功能标签区域 */
+.type-features {
+  /* 布局 */
+  display: flex;
+  flex-wrap: wrap;            /* 允许换行 */
+  gap: 8rpx;                  /* 标签间距：8rpx */
+}
+
+/* 功能标签 */
+.feature-tag {
+  /* 尺寸 */
+  padding: 4rpx 10rpx;        /* 内边距：上下4rpx，左右10rpx */
+  
+  /* 字体 */
+  font-size: 20rpx;           /* 字体大小：20rpx */
+  color: #4285f4;             /* 字体颜色：蓝色 */
+  
+  /* 外观 */
+  background: rgba(66, 133, 244, 0.1);  /* 背景色：半透明蓝色 */
+  border-radius: 12rpx;       /* 圆角：12rpx */
+  border: 1rpx solid rgba(66, 133, 244, 0.2);  /* 边框：半透明蓝色 */
+}
+
+/* 右侧箭头区域 */
+.type-arrow {
+  /* 尺寸 */
+  width: 32rpx;               /* 宽度：32rpx */
+  height: 32rpx;              /* 高度：32rpx */
+  
+  /* 布局 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;             /* 不允许收缩 */
+  margin-left: 16rpx;         /* 左边距：16rpx */
+  
+  /* 外观 */
+  background: rgba(0, 0, 0, 0.04);  /* 背景色：淡灰色 */
+  border-radius: 8rpx;        /* 圆角：8rpx */
+}
+
+/* 响应式设计 */
+@media (max-width: 750rpx) {
+  .type-content {
+    gap: 6rpx;
+  }
+  
+  .type-name {
+    font-size: 30rpx;
+  }
+  
+  .type-desc {
+    font-size: 24rpx;
+  }
+  
+  .feature-tag {
+    font-size: 18rpx;
+    padding: 3rpx 8rpx;
+  }
 }

@@ -1,8 +1,14 @@
 <view class="container">
-  <!-- 页面标题 -->
-  <view class="header-section">
-    <text class="page-title">销售出库管理</text>
-    <text class="page-subtitle">选择出库类型</text>
+  <!-- 顶部导航区域 - 轻量化设计 -->
+  <view class="header-modern">
+    <view class="breadcrumb">
+      <text class="breadcrumb-item">首页</text>
+      <t-icon name="chevron-right" size="12px" color="#999"></t-icon>
+      <text class="breadcrumb-current">出库管理</text>
+    </view>
+    <view class="header-title">
+      <text class="title-main">销售出库管理</text>
+    </view>
   </view>
 
   <!-- 出库类型选择 -->
@@ -73,13 +79,15 @@
     </view>
   </view>
 
-  <!-- 权限说明 -->
-  <view class="permission-notice">
-    <t-icon name="info-circle" size="16px" color="#666"></t-icon>
-    <text class="notice-text">
-      <text wx:if="{{userRole === 'owner'}}">您可以进行所有类型的出库操作</text>
-      <text wx:elif="{{userRole === 'admin'}}">您可以进行零售和批发出库操作</text>
-      <text wx:elif="{{userRole === 'sales'}}">您只能进行零售出库操作</text>
-    </text>
+  <!-- 权限提示 - 现代化设计 -->
+  <view class="permission-modern">
+    <view class="permission-icon">
+      <t-icon name="shield-check" size="16px" color="#4285f4"></t-icon>
+    </view>
+    <view class="permission-text">
+      <text wx:if="{{userRole === 'owner'}}">管理员权限：可以进行所有类型的出库操作</text>
+      <text wx:elif="{{userRole === 'admin'}}">管理权限：可以进行零售和批发出库操作</text>
+      <text wx:elif="{{userRole === 'sales'}}">查看权限：只能进行零售出库操作</text>
+    </view>
   </view>
 </view> 

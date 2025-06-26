@@ -26,6 +26,13 @@ interface IIndexData {
 
 Page({
   data: {
+    motto: 'Hello World',
+    userInfo: {},
+    hasUserInfo: false,
+    canIUse: wx.canIUse('button.open-type.getUserInfo'),
+    canIUseGetUserProfile: false,
+    canIUseOpenData: wx.canIUse('open-data.type.userAvatarUrl') && wx.canIUse('open-data.type.userNickName'), // 如需尝试获取用户信息
+    testResult: null as any,
     userRole: '', // 用户角色：owner, admin, sales, dealer
     userName: '',
     inventoryOverview: {
@@ -50,12 +57,23 @@ Page({
     dealerFunctions: [
       { icon: 'home', text: '经销商功能', route: '/pages/dealer/home/home' },
       { icon: 'info-circle', text: '待开发', route: '' }
-    ]
+    ],
+    logs: [] as string[]
   },
 
   onLoad() {
     this.loadUserInfo();
     this.loadInventoryOverview();
+    if (typeof wx.getUserProfile === 'function') {
+      this.setData({
+        canIUseGetUserProfile: true
+      })
+    }
+    this.setData({
+      logs: (wx.getStorageSync('logs') || []).map((log: string) => {
+        return new Date(log).toString()
+      })
+    })
   },
 
   onShow() {
@@ -113,16 +131,39 @@ Page({
     const { route } = e.currentTarget.dataset;
     
     if (route) {
-      wx.navigateTo({
-        url: route,
-        fail: (err) => {
-          console.error('页面跳转失败:', err);
-          wx.showToast({
-            title: '页面不存在',
-            icon: 'none'
-          });
-        }
-      });
+      // 检查是否为tabbar页面
+      const tabbarPages = [
+        '/pages/index/index',
+        '/pages/inventory/list/list',
+        '/pages/sale/list/list',
+        '/pages/statistics/list/list'
+      ];
+      
+      if (tabbarPages.includes(route)) {
+        // 使用switchTab跳转tabbar页面
+        wx.switchTab({
+          url: route,
+          fail: (err) => {
+            console.error('页面跳转失败:', err);
+            wx.showToast({
+              title: '页面不存在',
+              icon: 'none'
+            });
+          }
+        });
+      } else {
+        // 使用navigateTo跳转普通页面
+        wx.navigateTo({
+          url: route,
+          fail: (err) => {
+            console.error('页面跳转失败:', err);
+            wx.showToast({
+              title: '页面不存在',
+              icon: 'none'
+            });
+          }
+        });
+      }
     } else {
       wx.showToast({
         title: '功能开发中',
@@ -138,16 +179,39 @@ Page({
     const selectedFunction = functions[index];
     
     if (selectedFunction.route) {
-      wx.navigateTo({
-        url: selectedFunction.route,
-        fail: (err) => {
-          console.error('页面跳转失败:', err);
-          wx.showToast({
-            title: '页面不存在',
-            icon: 'none'
-          });
-        }
-      });
+      // 检查是否为tabbar页面
+      const tabbarPages = [
+        '/pages/index/index',
+        '/pages/inventory/list/list',
+        '/pages/sale/list/list',
+        '/pages/statistics/list/list'
+      ];
+      
+      if (tabbarPages.includes(selectedFunction.route)) {
+        // 使用switchTab跳转tabbar页面
+        wx.switchTab({
+          url: selectedFunction.route,
+          fail: (err) => {
+            console.error('页面跳转失败:', err);
+            wx.showToast({
+              title: '页面不存在',
+              icon: 'none'
+            });
+          }
+        });
+      } else {
+        // 使用navigateTo跳转普通页面
+        wx.navigateTo({
+          url: selectedFunction.route,
+          fail: (err) => {
+            console.error('页面跳转失败:', err);
+            wx.showToast({
+              title: '页面不存在',
+              icon: 'none'
+            });
+          }
+        });
+      }
     } else {
       wx.showToast({
         title: '功能开发中',
@@ -222,5 +286,62 @@ Page({
         }
       }
     });
+  },
+
+  // 扫码搜索功能
+  onScanCode() {
+    wx.scanCode({
+      success: (res) => {
+        const scannedCode = res.result;
+        console.log('扫码结果:', scannedCode);
+        
+        // 自动在搜索框中填入扫码结果并执行搜索
+        wx.navigateTo({
+          url: `/pages/search/search?keyword=${encodeURIComponent(scannedCode)}&scanMode=true`,
+          fail: (err) => {
+            console.error('搜索页面跳转失败:', err);
+            wx.showToast({
+              title: `扫到: ${scannedCode}`,
+              icon: 'none',
+              duration: 2000
+            });
+          }
+        });
+      },
+      fail: (err) => {
+        console.error('扫码失败:', err);
+        if (err.errMsg && err.errMsg.includes('cancel')) {
+          // 用户取消扫码，不显示错误信息
+          return;
+        }
+        wx.showToast({
+          title: '扫码失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
+
+  getUserProfile(e: any) {
+    // 推荐使用wx.getUserProfile获取用户信息，开发者每次通过该接口获取用户个人信息均需用户确认，开发者妥善保管用户快速填写的头像昵称，避免重复弹窗
+    wx.getUserProfile({
+      desc: '用于完善会员资料', // 声明获取用户个人信息后的用途，后续会展示在弹窗中，请谨慎填写
+      success: (res) => {
+        console.log(res)
+        this.setData({
+          userInfo: res.userInfo,
+          hasUserInfo: true
+        })
+      }
+    })
+  },
+
+  getUserInfo(e: any) {
+    // 不推荐使用getUserInfo获取用户信息，预计自2021年4月13日起，getUserInfo将不再弹出弹窗，并直接返回匿名的用户个人信息
+    console.log(e)
+    this.setData({
+      userInfo: e.detail.userInfo,
+      hasUserInfo: true
+    })
   }
 });

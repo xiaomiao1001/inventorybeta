@@ -3,6 +3,7 @@
     "pages/login/login",
     "pages/index/index",
     "pages/inventory/list/list",
+    "pages/inventory/batch-import/batch-import",
     "pages/inventory/hongri/hongri",
     "pages/inventory/secondhand/secondhand", 
     "pages/inventory/other/other",
@@ -30,19 +31,27 @@
     "list": [
       {
         "pagePath": "pages/index/index",
-        "text": "首页"
+        "text": "首页",
+        "iconPath": "images/tabbar/home.png",
+        "selectedIconPath": "images/tabbar/home-active.png"
       },
       {
         "pagePath": "pages/inventory/list/list",
-        "text": "库存"
+        "text": "库存",
+        "iconPath": "images/tabbar/shop.png",
+        "selectedIconPath": "images/tabbar/shop-active.png"
       },
       {
         "pagePath": "pages/sale/list/list",
-        "text": "出库"
+        "text": "出库",
+        "iconPath": "images/tabbar/order.png",
+        "selectedIconPath": "images/tabbar/order-active.png"
       },
       {
         "pagePath": "pages/statistics/list/list",
-        "text": "统计"
+        "text": "统计",
+        "iconPath": "images/tabbar/chart.png",
+        "selectedIconPath": "images/tabbar/chart-active.png"
       }
     ]
   },

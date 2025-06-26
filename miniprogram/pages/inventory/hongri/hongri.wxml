@@ -21,6 +21,15 @@
     >
       {{filterVisible ? '收起筛选' : '全部状态'}}
     </t-button>
+    <t-button
+      size="small"
+      theme="primary"
+      bind:tap="onBatchImportTap"
+      icon="upload"
+      class="batch-import-btn"
+    >
+      批量入库
+    </t-button>
   </view>
 
   <!-- 库存列表表头 -->

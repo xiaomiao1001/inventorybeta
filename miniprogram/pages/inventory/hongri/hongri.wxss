@@ -16,6 +16,10 @@
   gap: 20rpx;
 }
 
+.batch-import-btn {
+  margin-left: auto;
+}
+
 .table-header {
   display: grid;
   grid-template-columns: 120rpx 150rpx 100rpx 80rpx 140rpx 100rpx;

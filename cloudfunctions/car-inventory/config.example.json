@@ -1,0 +1,10 @@
+{
+  "env": "您的环境ID",
+  "credentials": {
+    "secretId": "您的SecretId",
+    "secretKey": "您的SecretKey"
+  },
+  "database": {
+    "connectionUri": "您的数据库连接URI"
+  }
+} 

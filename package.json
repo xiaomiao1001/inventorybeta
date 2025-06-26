@@ -1,26 +1,14 @@
 {
-  "name": "miniprogram-ts-quickstart",
+  "name": "miniprogram-inventory-system",
   "version": "1.0.0",
   "description": "郭四车行库存管理系统",
   "scripts": {
-    "build": "echo '请使用微信开发者工具进行构建'",
-    "dev": "echo '请使用微信开发者工具进行开发预览'",
-    "lint": "echo '代码检查'",
-    "preview": "echo '请使用微信开发者工具进行预览'"
+    "cloud:log": "tcb functions:log -e your-env-id -n inventoryManager"
   },
-  "keywords": [
-    "miniprogram",
-    "typescript",
-    "tdesign"
-  ],
-  "author": "",
-  "license": "",
   "dependencies": {
-    "tdesign-miniprogram": "^1.9.4"
+    "@cloudbase/wx-cloud-client-sdk": "^1.2.1"
   },
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "miniprogram-api-typings": "^2.8.3-1",
-    "puppeteer": "^24.10.0"
-  }
+  "devDependencies": {},
+  "main": "app.js",
+  "license": "MIT"
 }

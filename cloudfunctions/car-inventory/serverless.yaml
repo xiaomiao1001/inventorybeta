@@ -1,0 +1,19 @@
+component: scf
+name: car-inventory
+inputs:
+  handler: index.main
+  description: ai创建批量入库云函数
+  runtime: Nodejs18.15
+  memorySize: 256
+  installDependency: true
+  timeout: 20
+  vpcConfig:
+    vpcId: ""
+    subnetId: ""
+  events: []
+  layers: []
+  initTimeout: 65
+  protocolParams: null
+  protocolType: ""
+  eip: false
+  publicAccess: true

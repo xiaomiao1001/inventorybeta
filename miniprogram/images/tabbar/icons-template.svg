@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100">
+  <!-- Home Icon (首页) -->
+  <g id="home" transform="translate(10, 10)">
+    <rect x="0" y="0" width="24" height="24" fill="none" stroke="#999" stroke-width="0.5" stroke-dasharray="2,2"/>
+    <path d="M12 2l8 8v10h-5v-6h-6v6h-5v-10l8-8z" fill="#999"/>
+    <text x="12" y="30" text-anchor="middle" font-size="8" fill="#666">home</text>
+  </g>
+  
+  <!-- Shop Icon (库存) -->
+  <g id="shop" transform="translate(110, 10)">
+    <rect x="0" y="0" width="24" height="24" fill="none" stroke="#999" stroke-width="0.5" stroke-dasharray="2,2"/>
+    <path d="M3 3h18l-1 6h-16l-1-6z" fill="#999"/>
+    <rect x="4" y="9" width="16" height="11" fill="none" stroke="#999" stroke-width="1"/>
+    <circle cx="8" cy="15" r="1" fill="#999"/>
+    <circle cx="16" cy="15" r="1" fill="#999"/>
+    <text x="12" y="30" text-anchor="middle" font-size="8" fill="#666">shop</text>
+  </g>
+  
+  <!-- Order Icon (出库) -->
+  <g id="order" transform="translate(210, 10)">
+    <rect x="0" y="0" width="24" height="24" fill="none" stroke="#999" stroke-width="0.5" stroke-dasharray="2,2"/>
+    <rect x="4" y="2" width="16" height="18" fill="none" stroke="#999" stroke-width="1"/>
+    <line x1="7" y1="6" x2="17" y2="6" stroke="#999" stroke-width="1"/>
+    <line x1="7" y1="10" x2="17" y2="10" stroke="#999" stroke-width="1"/>
+    <line x1="7" y1="14" x2="17" y2="14" stroke="#999" stroke-width="1"/>
+    <text x="12" y="30" text-anchor="middle" font-size="8" fill="#666">order</text>
+  </g>
+  
+  <!-- Chart Icon (统计) -->
+  <g id="chart" transform="translate(310, 10)">
+    <rect x="0" y="0" width="24" height="24" fill="none" stroke="#999" stroke-width="0.5" stroke-dasharray="2,2"/>
+    <rect x="6" y="12" width="3" height="8" fill="#999"/>
+    <rect x="10" y="8" width="3" height="12" fill="#999"/>
+    <rect x="14" y="4" width="3" height="16" fill="#999"/>
+    <text x="12" y="30" text-anchor="middle" font-size="8" fill="#666">chart</text>
+  </g>
+  
+  <!-- Selected versions (active state) -->
+  <g transform="translate(0, 50)">
+    <!-- Home Active -->
+    <g id="home-active" transform="translate(10, 10)">
+      <rect x="0" y="0" width="24" height="24" fill="none" stroke="#007AFF" stroke-width="0.5" stroke-dasharray="2,2"/>
+      <path d="M12 2l8 8v10h-5v-6h-6v6h-5v-10l8-8z" fill="#007AFF"/>
+      <text x="12" y="30" text-anchor="middle" font-size="8" fill="#007AFF">home-active</text>
+    </g>
+    
+    <!-- Shop Active -->
+    <g id="shop-active" transform="translate(110, 10)">
+      <rect x="0" y="0" width="24" height="24" fill="none" stroke="#007AFF" stroke-width="0.5" stroke-dasharray="2,2"/>
+      <path d="M3 3h18l-1 6h-16l-1-6z" fill="#007AFF"/>
+      <rect x="4" y="9" width="16" height="11" fill="none" stroke="#007AFF" stroke-width="1"/>
+      <circle cx="8" cy="15" r="1" fill="#007AFF"/>
+      <circle cx="16" cy="15" r="1" fill="#007AFF"/>
+      <text x="12" y="30" text-anchor="middle" font-size="8" fill="#007AFF">shop-active</text>
+    </g>
+    
+    <!-- Order Active -->
+    <g id="order-active" transform="translate(210, 10)">
+      <rect x="0" y="0" width="24" height="24" fill="none" stroke="#007AFF" stroke-width="0.5" stroke-dasharray="2,2"/>
+      <rect x="4" y="2" width="16" height="18" fill="none" stroke="#007AFF" stroke-width="1"/>
+      <line x1="7" y1="6" x2="17" y2="6" stroke="#007AFF" stroke-width="1"/>
+      <line x1="7" y1="10" x2="17" y2="10" stroke="#007AFF" stroke-width="1"/>
+      <line x1="7" y1="14" x2="17" y2="14" stroke="#007AFF" stroke-width="1"/>
+      <text x="12" y="30" text-anchor="middle" font-size="8" fill="#007AFF">order-active</text>
+    </g>
+    
+    <!-- Chart Active -->
+    <g id="chart-active" transform="translate(310, 10)">
+      <rect x="0" y="0" width="24" height="24" fill="none" stroke="#007AFF" stroke-width="0.5" stroke-dasharray="2,2"/>
+      <rect x="6" y="12" width="3" height="8" fill="#007AFF"/>
+      <rect x="10" y="8" width="3" height="12" fill="#007AFF"/>
+      <rect x="14" y="4" width="3" height="16" fill="#007AFF"/>
+      <text x="12" y="30" text-anchor="middle" font-size="8" fill="#007AFF">chart-active</text>
+    </g>
+  </g>
+</svg> 
