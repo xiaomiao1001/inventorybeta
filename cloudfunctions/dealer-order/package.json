@@ -4,6 +4,9 @@
   "description": "经销商订单相关云函数",
   "main": "index.js",
   "dependencies": {
-    "@cloudbase/node-sdk": "^2.4.1"
+    "@cloudbase/node-sdk": "^3.0.0"
+  },
+  "cloudbaserc": {
+    "timeout": 60
   }
 } 

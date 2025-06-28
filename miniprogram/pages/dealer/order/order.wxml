@@ -45,6 +45,9 @@
           <view class="price-btn" bindtap="testDealerPriceConnection">
             <text class="price-icon">💰</text>
           </view>
+          <view class="new-test-btn" bindtap="testNewCloudFunction">
+            <text class="new-test-icon">🆕</text>
+          </view>
           <view class="create-btn" bindtap="createTestData">
             <text class="create-icon">➕</text>
           </view>

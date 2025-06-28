@@ -157,6 +157,7 @@ page {
 
 .test-btn,
 .price-btn,
+.new-test-btn,
 .create-btn,
 .check-btn,
 .refresh-btn {
@@ -186,6 +187,16 @@ page {
 
 .price-btn:active {
   background: #f1b0b7;
+  transform: scale(0.95);
+}
+
+.new-test-btn {
+  background: #e2e3ff;
+  border: 1rpx solid #6366f1;
+}
+
+.new-test-btn:active {
+  background: #c7d2fe;
   transform: scale(0.95);
 }
 

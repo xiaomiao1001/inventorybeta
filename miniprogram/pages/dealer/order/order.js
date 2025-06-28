@@ -6,7 +6,7 @@ Page({
     // 经销商信息
     dealerInfo: '',
     dealerLevel: '',
-    
+
     // 车辆选择
     selectedSeries: '',
     selectedModel: '',
@@ -14,7 +14,7 @@ Page({
     selectedColor: '',
     selectedColorCode: '#ff0000',
     basePrice: 0,
-    
+
     // 配置选项
     configOptions: [
       {
@@ -82,7 +82,7 @@ Page({
       }
     ],
     configTotalPrice: 0,
-    
+
     // 其他费用
     otherFees: {
       insurance: 0,
@@ -91,7 +91,7 @@ Page({
       discount: 0
     },
     otherFeesTotalPrice: 0,
-    
+
     // 提车方式
     deliveryOptions: [
       { value: 'logistics', name: '物流发运', fee: 0 },
@@ -100,29 +100,29 @@ Page({
     ],
     deliveryMethod: 'logistics',
     deliveryFee: 0,
-    
+
     // 总价
     totalAmount: 0,
-    
+
     // 选择器相关
     showPicker: false,
     pickerTitle: '',
     pickerOptions: [],
     currentPickerType: '',
     currentPickerValue: '',
-    
+
     // 数据源 - 从鸿日库存获取
     seriesList: [],
     modelsList: [],
     configsList: [],
     colorsList: [],
-    
+
     // 鸿日库存原始数据
     hongriInventoryData: [],
-    
+
     // 车辆价格数据
     vehiclePricesData: [],
-    
+
     // 加载状态
     isLoadingInventory: false
   },
@@ -138,12 +138,12 @@ Page({
     // 从全局状态或本地存储获取经销商信息
     const userInfo = wx.getStorageSync('userInfo') || {}
     const dealerLevel = userInfo.username === 'jxs-qx' ? '高级批发商' : '低级批发商'
-    
+
     this.setData({
       dealerInfo: `${userInfo.username} (${dealerLevel})`,
       dealerLevel: dealerLevel
     })
-    
+
     // 根据经销商等级设置费用
     this.setOtherFees(dealerLevel)
   },
@@ -156,14 +156,14 @@ Page({
       markup: 400,
       discount: 0
     } : {
-      insurance: 0,
-      shipping: 0,
-      markup: 0,
-      discount: 0
-    }
-    
+        insurance: 0,
+        shipping: 0,
+        markup: 0,
+        discount: 0
+      }
+
     const total = fees.insurance + fees.shipping + fees.markup - fees.discount
-    
+
     this.setData({
       otherFees: fees,
       otherFeesTotalPrice: total
@@ -174,12 +174,11 @@ Page({
   async loadInventoryAndPriceData() {
     try {
       this.setData({ isLoadingInventory: true })
-      
-      wx.showLoading({
-        title: '加载数据中...'
-      })
-      
-      // 使用新的经销商订单云函数获取车型系列数据
+      wx.showLoading({ title: '加载车型数据...' })
+
+      console.log('开始加载库存和价格数据')
+
+      // 使用新的dealer-order云函数获取车型系列列表
       const seriesResult = await wx.cloud.callFunction({
         name: 'dealer-order',
         data: {
@@ -187,35 +186,35 @@ Page({
           data: {}
         }
       })
-      
-      console.log('车型系列查询结果:', seriesResult)
-      
-      // 处理车型系列数据
+
+      console.log('新云函数车型系列查询结果:', seriesResult)
+
       if (seriesResult.result && seriesResult.result.code === 0 && seriesResult.result.data) {
         const seriesList = seriesResult.result.data
         console.log('获取到的车型系列列表:', seriesList)
-        
+
         this.setData({
           seriesList: seriesList
         })
-        
+
         wx.showToast({
           title: `加载成功，共${seriesList.length}个车型系列`,
           icon: 'success',
           duration: 2000
         })
       } else {
-        console.log('车型系列数据加载失败:', seriesResult)
+        console.log('新云函数调用失败，使用备用数据')
+        this.initFallbackData()
+        
         wx.showToast({
-          title: '暂无车型系列数据',
+          title: '使用备用数据',
           icon: 'none',
           duration: 2000
         })
-        this.initFallbackData()
       }
-      
+
       wx.hideLoading()
-      
+
     } catch (error) {
       wx.hideLoading()
       console.error('加载数据失败:', error)
@@ -224,7 +223,7 @@ Page({
         icon: 'error',
         duration: 2000
       })
-      
+
       // 使用备用数据
       this.initFallbackData()
     } finally {
@@ -232,12 +231,37 @@ Page({
     }
   },
 
+  // 从库存数据中提取车型系列列表
+  extractSeriesList(inventoryData) {
+    console.log('提取车型系列，库存数据条数:', inventoryData.length)
+
+    const seriesSet = new Set()
+    inventoryData.forEach(item => {
+      if (item.model_series) {
+        seriesSet.add(item.model_series)
+      }
+    })
+
+    const seriesList = Array.from(seriesSet).map(series => ({
+      value: series,
+      label: series
+    }))
+
+    console.log('提取到的车型系列列表:', seriesList)
+
+    this.setData({
+      seriesList: seriesList
+    })
+
+    return seriesList
+  },
+
   // 根据选择的系列提取车型列表
   extractModelsList(selectedSeries) {
     console.log('开始提取车型列表，选择的系列:', selectedSeries)
-    
+
     const modelsSet = new Set()
-    
+
     this.data.hongriInventoryData.forEach((item, index) => {
       if (item.model_series === selectedSeries && item.model_type) {
         modelsSet.add(item.model_type)
@@ -249,27 +273,27 @@ Page({
         }
       }
     })
-    
+
     const modelsList = Array.from(modelsSet).map(model => ({
       value: model,
       label: model
     }))
-    
+
     console.log('提取到的车型列表:', modelsList)
-    
+
     return modelsList
   },
 
   // 根据选择的车型提取配置列表
   extractConfigsList(selectedSeries, selectedModel) {
     console.log('开始提取配置列表，系列:', selectedSeries, '车型:', selectedModel)
-    
+
     const configsSet = new Set()
-    
+
     this.data.hongriInventoryData.forEach((item, index) => {
-      if (item.model_series === selectedSeries && 
-          item.model_type === selectedModel && 
-          item.configuration) {
+      if (item.model_series === selectedSeries &&
+        item.model_type === selectedModel &&
+        item.configuration) {
         configsSet.add(item.configuration)
         if (index < 3) {
           console.log(`匹配的配置数据第${index + 1}条:`, {
@@ -280,28 +304,28 @@ Page({
         }
       }
     })
-    
+
     const configsList = Array.from(configsSet).map(config => ({
       value: config,
       label: config
     }))
-    
+
     console.log('提取到的配置列表:', configsList)
-    
+
     return configsList
   },
 
   // 根据选择的车型和配置提取颜色列表
   extractColorsList(selectedSeries, selectedModel, selectedConfig) {
     console.log('开始提取颜色列表，系列:', selectedSeries, '车型:', selectedModel, '配置:', selectedConfig)
-    
+
     const colorsSet = new Set()
-    
+
     this.data.hongriInventoryData.forEach((item, index) => {
-      if (item.model_series === selectedSeries && 
-          item.model_type === selectedModel && 
-          item.configuration === selectedConfig &&
-          item.color) {
+      if (item.model_series === selectedSeries &&
+        item.model_type === selectedModel &&
+        item.configuration === selectedConfig &&
+        item.color) {
         colorsSet.add(item.color)
         if (index < 3) {
           console.log(`匹配的颜色数据第${index + 1}条:`, {
@@ -313,15 +337,15 @@ Page({
         }
       }
     })
-    
+
     const colorsList = Array.from(colorsSet).map(color => ({
       value: color,
       label: color,
       color: this.getColorCode(color)
     }))
-    
+
     console.log('提取到的颜色列表:', colorsList)
-    
+
     return colorsList
   },
 
@@ -337,7 +361,7 @@ Page({
       '绿色': '#008000',
       '黄色': '#ffff00'
     }
-    
+
     return colorMap[colorName] || '#666666'
   },
 
@@ -359,7 +383,8 @@ Page({
     console.log('当前isLoadingInventory:', this.data.isLoadingInventory)
     console.log('当前seriesList:', this.data.seriesList)
     console.log('seriesList长度:', this.data.seriesList.length)
-    
+    console.log('库存数据长度:', this.data.hongriInventoryData.length)
+
     if (this.data.isLoadingInventory) {
       console.log('数据正在加载中，无法显示选择器')
       wx.showToast({
@@ -368,37 +393,33 @@ Page({
       })
       return
     }
-    
-    if (this.data.seriesList.length === 0) {
-      console.log('seriesList为空，无法显示选择器')
-      console.log('尝试重新从库存数据提取系列...')
-      
-      // 如果系列列表为空，但有库存数据，尝试重新提取
-      if (this.data.hongriInventoryData.length > 0) {
-        console.log('检测到库存数据，重新提取系列列表')
-        this.extractSeriesList(this.data.hongriInventoryData)
-        
-        // 重新检查
-        if (this.data.seriesList.length > 0) {
-          console.log('重新提取成功，继续显示选择器')
-        } else {
-          wx.showToast({
-            title: '无法提取车型系列数据',
-            icon: 'none'
-          })
-          return
-        }
+
+    // 如果系列列表为空，但有库存数据，尝试重新提取
+    if (this.data.seriesList.length === 0 && this.data.hongriInventoryData.length > 0) {
+      console.log('系列列表为空但有库存数据，重新提取系列列表')
+      const newSeriesList = this.extractSeriesList(this.data.hongriInventoryData)
+
+      if (newSeriesList.length > 0) {
+        console.log('重新提取成功，继续显示选择器')
+        // 继续执行显示选择器的逻辑
       } else {
         wx.showToast({
-          title: '暂无可选车型系列',
+          title: '无法提取车型系列数据',
           icon: 'none'
         })
         return
       }
+    } else if (this.data.seriesList.length === 0) {
+      console.log('无车型系列数据且无库存数据')
+      wx.showToast({
+        title: '暂无可选车型系列，请先加载数据',
+        icon: 'none'
+      })
+      return
     }
-    
+
     console.log('准备显示选择器，选项:', this.data.seriesList)
-    
+
     this.setData({
       showPicker: true,
       pickerTitle: '选择车型系列',
@@ -406,7 +427,7 @@ Page({
       currentPickerType: 'series',
       currentPickerValue: this.data.selectedSeries
     })
-    
+
     console.log('选择器已设置，showPicker:', this.data.showPicker)
   },
 
@@ -419,30 +440,60 @@ Page({
       })
       return
     }
-    
+
     try {
       wx.showLoading({
         title: '加载车型中...'
       })
-      
-      // 调用新的云函数获取车型列表
-      const modelsResult = await wx.cloud.callFunction({
-        name: 'dealer-order',
-        data: {
-          action: 'getModelsList',
-          data: {
-            series: this.data.selectedSeries
-          }
-        }
+
+      console.log('=== 开始调用getModelsList ===')
+      console.log('selectedSeries值:', this.data.selectedSeries)
+      console.log('selectedSeries类型:', typeof this.data.selectedSeries)
+      console.log('传递给云函数的参数:', {
+        series: this.data.selectedSeries
       })
-      
-      wx.hideLoading()
-      
-      console.log('车型查询结果:', modelsResult)
-      
-      if (modelsResult.result && modelsResult.result.code === 0 && modelsResult.result.data) {
-        const models = modelsResult.result.data
-        
+
+      // 先尝试调用新的云函数获取车型列表
+      try {
+        const modelsResult = await wx.cloud.callFunction({
+          name: 'dealer-order',
+          data: {
+            action: 'getModelsList',
+            data: {
+              series: this.data.selectedSeries
+            }
+          }
+        })
+
+        console.log('新云函数车型查询结果:', modelsResult)
+
+        if (modelsResult.result && modelsResult.result.code === 0 && modelsResult.result.data) {
+          const models = modelsResult.result.data
+
+          if (models.length === 0) {
+            wx.showToast({
+              title: '该系列暂无可选车型',
+              icon: 'none'
+            })
+            return
+          }
+
+          this.setData({
+            showPicker: true,
+            pickerTitle: '选择车型',
+            pickerOptions: models,
+            currentPickerType: 'model',
+            currentPickerValue: this.data.selectedModel
+          })
+        } else {
+          throw new Error('新云函数返回失败')
+        }
+      } catch (newFunctionError) {
+        console.log('新云函数获取车型失败，使用本地数据:', newFunctionError)
+
+        // 使用本地库存数据提取车型列表
+        const models = this.extractModelsList(this.data.selectedSeries)
+
         if (models.length === 0) {
           wx.showToast({
             title: '该系列暂无可选车型',
@@ -450,7 +501,7 @@ Page({
           })
           return
         }
-        
+
         this.setData({
           showPicker: true,
           pickerTitle: '选择车型',
@@ -458,13 +509,10 @@ Page({
           currentPickerType: 'model',
           currentPickerValue: this.data.selectedModel
         })
-      } else {
-        wx.showToast({
-          title: '获取车型列表失败',
-          icon: 'error'
-        })
       }
-      
+
+      wx.hideLoading()
+
     } catch (error) {
       wx.hideLoading()
       console.error('获取车型列表失败:', error)
@@ -484,31 +532,54 @@ Page({
       })
       return
     }
-    
+
     try {
       wx.showLoading({
         title: '加载配置中...'
       })
-      
-      // 调用新的云函数获取配置列表
-      const configsResult = await wx.cloud.callFunction({
-        name: 'dealer-order',
-        data: {
-          action: 'getConfigsList',
+
+      // 先尝试调用新的云函数获取配置列表
+      try {
+        const configsResult = await wx.cloud.callFunction({
+          name: 'dealer-order',
           data: {
-            series: this.data.selectedSeries,
-            model: this.data.selectedModel
+            action: 'getConfigsList',
+            data: {
+              series: this.data.selectedSeries,
+              model: this.data.selectedModel
+            }
           }
+        })
+
+        console.log('新云函数配置查询结果:', configsResult)
+
+        if (configsResult.result && configsResult.result.code === 0 && configsResult.result.data) {
+          const configs = configsResult.result.data
+
+          if (configs.length === 0) {
+            wx.showToast({
+              title: '该车型暂无可选配置',
+              icon: 'none'
+            })
+            return
+          }
+
+          this.setData({
+            showPicker: true,
+            pickerTitle: '选择配置',
+            pickerOptions: configs,
+            currentPickerType: 'config',
+            currentPickerValue: this.data.selectedConfig
+          })
+        } else {
+          throw new Error('新云函数返回失败')
         }
-      })
-      
-      wx.hideLoading()
-      
-      console.log('配置查询结果:', configsResult)
-      
-      if (configsResult.result && configsResult.result.code === 0 && configsResult.result.data) {
-        const configs = configsResult.result.data
-        
+      } catch (newFunctionError) {
+        console.log('新云函数获取配置失败，使用本地数据:', newFunctionError)
+
+        // 使用本地库存数据提取配置列表
+        const configs = this.extractConfigsList(this.data.selectedSeries, this.data.selectedModel)
+
         if (configs.length === 0) {
           wx.showToast({
             title: '该车型暂无可选配置',
@@ -516,7 +587,7 @@ Page({
           })
           return
         }
-        
+
         this.setData({
           showPicker: true,
           pickerTitle: '选择配置',
@@ -524,13 +595,10 @@ Page({
           currentPickerType: 'config',
           currentPickerValue: this.data.selectedConfig
         })
-      } else {
-        wx.showToast({
-          title: '获取配置列表失败',
-          icon: 'error'
-        })
       }
-      
+
+      wx.hideLoading()
+
     } catch (error) {
       wx.hideLoading()
       console.error('获取配置列表失败:', error)
@@ -550,32 +618,55 @@ Page({
       })
       return
     }
-    
+
     try {
       wx.showLoading({
         title: '加载颜色中...'
       })
-      
-      // 调用新的云函数获取颜色列表
-      const colorsResult = await wx.cloud.callFunction({
-        name: 'dealer-order',
-        data: {
-          action: 'getColorsList',
+
+      // 先尝试调用新的云函数获取颜色列表
+      try {
+        const colorsResult = await wx.cloud.callFunction({
+          name: 'dealer-order',
           data: {
-            series: this.data.selectedSeries,
-            model: this.data.selectedModel,
-            config: this.data.selectedConfig
+            action: 'getColorsList',
+            data: {
+              series: this.data.selectedSeries,
+              model: this.data.selectedModel,
+              config: this.data.selectedConfig
+            }
           }
+        })
+
+        console.log('新云函数颜色查询结果:', colorsResult)
+
+        if (colorsResult.result && colorsResult.result.code === 0 && colorsResult.result.data) {
+          const colors = colorsResult.result.data
+
+          if (colors.length === 0) {
+            wx.showToast({
+              title: '该配置暂无可选颜色',
+              icon: 'none'
+            })
+            return
+          }
+
+          this.setData({
+            showPicker: true,
+            pickerTitle: '选择颜色',
+            pickerOptions: colors,
+            currentPickerType: 'color',
+            currentPickerValue: this.data.selectedColor
+          })
+        } else {
+          throw new Error('新云函数返回失败')
         }
-      })
-      
-      wx.hideLoading()
-      
-      console.log('颜色查询结果:', colorsResult)
-      
-      if (colorsResult.result && colorsResult.result.code === 0 && colorsResult.result.data) {
-        const colors = colorsResult.result.data
-        
+      } catch (newFunctionError) {
+        console.log('新云函数获取颜色失败，使用本地数据:', newFunctionError)
+
+        // 使用本地库存数据提取颜色列表
+        const colors = this.extractColorsList(this.data.selectedSeries, this.data.selectedModel, this.data.selectedConfig)
+
         if (colors.length === 0) {
           wx.showToast({
             title: '该配置暂无可选颜色',
@@ -583,7 +674,7 @@ Page({
           })
           return
         }
-        
+
         this.setData({
           showPicker: true,
           pickerTitle: '选择颜色',
@@ -591,13 +682,10 @@ Page({
           currentPickerType: 'color',
           currentPickerValue: this.data.selectedColor
         })
-      } else {
-        wx.showToast({
-          title: '获取颜色列表失败',
-          icon: 'error'
-        })
       }
-      
+
+      wx.hideLoading()
+
     } catch (error) {
       wx.hideLoading()
       console.error('获取颜色列表失败:', error)
@@ -624,11 +712,14 @@ Page({
   selectPickerOption(e) {
     const { value, label, data } = e.currentTarget.dataset
     const { currentPickerType } = this.data
-    
+
+    console.log('选择器选项点击:', { value, label, data, currentPickerType })
+
     switch (currentPickerType) {
       case 'series':
+        console.log('选择车型系列:', value)
         this.setData({
-          selectedSeries: label,
+          selectedSeries: value, // 使用value确保是纯字符串
           selectedModel: '',
           selectedConfig: '',
           selectedColor: '',
@@ -636,30 +727,33 @@ Page({
         })
         break
       case 'model':
+        console.log('选择车型:', value)
         this.setData({
-          selectedModel: label,
+          selectedModel: value, // 使用value确保是纯字符串
           selectedConfig: '',
           selectedColor: '',
-          basePrice: this.getBasePriceByModel(label)
+          basePrice: this.getBasePriceByModel(value)
         })
         break
       case 'config':
+        console.log('选择配置:', value)
         this.setData({
-          selectedConfig: label
+          selectedConfig: value // 使用value确保是纯字符串
         })
         // 当配置选择完成后，尝试从价格表获取价格
         this.updatePriceFromTable()
         break
       case 'color':
+        console.log('选择颜色:', value)
         this.setData({
-          selectedColor: label,
+          selectedColor: value, // 使用value确保是纯字符串
           selectedColorCode: data.color || '#ff0000'
         })
         // 当颜色选择完成后，再次尝试从价格表获取价格
         this.updatePriceFromTable()
         break
     }
-    
+
     this.hidePicker()
     this.calculateTotalPrice()
   },
@@ -667,12 +761,12 @@ Page({
   // 从价格表更新价格
   async updatePriceFromTable() {
     const { selectedSeries, selectedModel, selectedConfig, selectedColor } = this.data
-    
+
     // 只有当系列和车型都选择了才查询价格
     if (!selectedSeries || !selectedModel) {
       return
     }
-    
+
     try {
       console.log('尝试从经销商价格表获取价格:', {
         series: selectedSeries,
@@ -680,7 +774,7 @@ Page({
         config: selectedConfig,
         color: selectedColor
       })
-      
+
       // 调用新的云函数获取价格信息
       const priceResult = await wx.cloud.callFunction({
         name: 'dealer-order',
@@ -694,29 +788,29 @@ Page({
           }
         }
       })
-      
+
       console.log('价格查询结果:', priceResult)
-      
+
       if (priceResult.result && priceResult.result.code === 0 && priceResult.result.data) {
         const priceInfo = priceResult.result.data
         console.log('找到匹配的价格:', priceInfo)
-        
+
         // 根据经销商等级选择对应价格
-        const dealerPrice = this.data.dealerLevel === '高级批发商' 
+        const dealerPrice = this.data.dealerLevel === '高级批发商'
           ? priceInfo.senior_dealer_price || priceInfo.current_senior_dealer_price
           : priceInfo.junior_dealer_price || priceInfo.current_junior_dealer_price
-        
+
         if (dealerPrice && dealerPrice > 0) {
           this.setData({
             basePrice: dealerPrice
           })
-          
+
           wx.showToast({
             title: '已更新实时价格',
             icon: 'success',
             duration: 1000
           })
-          
+
           console.log('价格更新成功:', dealerPrice)
         } else {
           console.log('价格数据无效:', dealerPrice)
@@ -734,7 +828,7 @@ Page({
           duration: 1000
         })
       }
-      
+
     } catch (error) {
       console.error('获取价格失败:', error)
       wx.showToast({
@@ -750,18 +844,18 @@ Page({
     const index = e.currentTarget.dataset.index
     const configOptions = [...this.data.configOptions]
     configOptions[index].selected = !configOptions[index].selected
-    
+
     // 更新锂电池价格（根据车型功率）
     if (configOptions[index].id === 'lithium') {
       const is60V = this.isLowPowerModel(this.data.selectedModel)
       configOptions[index].price = is60V ? 4200 : 4600
       configOptions[index].desc = is60V ? '60V车型（小功率）' : '72V车型（其他）'
     }
-    
+
     this.setData({
       configOptions
     })
-    
+
     this.calculateConfigTotal()
     this.calculateTotalPrice()
   },
@@ -770,12 +864,12 @@ Page({
   selectDeliveryMethod(e) {
     const value = e.currentTarget.dataset.value
     const option = this.data.deliveryOptions.find(item => item.value === value)
-    
+
     this.setData({
       deliveryMethod: value,
       deliveryFee: option.fee
     })
-    
+
     this.calculateTotalPrice()
   },
 
@@ -784,7 +878,7 @@ Page({
     const total = this.data.configOptions.reduce((sum, item) => {
       return sum + (item.selected ? item.price : 0)
     }, 0)
-    
+
     this.setData({
       configTotalPrice: total
     })
@@ -794,7 +888,7 @@ Page({
   calculateTotalPrice() {
     const { basePrice, configTotalPrice, otherFeesTotalPrice, deliveryFee } = this.data
     const total = basePrice + configTotalPrice + otherFeesTotalPrice + deliveryFee
-    
+
     this.setData({
       totalAmount: total
     })
@@ -805,10 +899,10 @@ Page({
     if (!this.validateForm()) {
       return
     }
-    
+
     const orderData = this.buildOrderData('pending')
     this.saveOrder(orderData)
-    
+
     wx.showToast({
       title: '已加入购物车',
       icon: 'success'
@@ -820,15 +914,15 @@ Page({
     if (!this.validateForm()) {
       return
     }
-    
+
     const orderData = this.buildOrderData('submitted')
     this.saveOrder(orderData)
-    
+
     wx.showToast({
       title: '订单提交成功',
       icon: 'success'
     })
-    
+
     // 跳转到订单列表
     setTimeout(() => {
       this.switchToOrders()
@@ -860,7 +954,7 @@ Page({
   buildOrderData(status) {
     const now = new Date()
     const orderNo = this.generateOrderNo()
-    
+
     return {
       orderNo,
       dealer: this.data.dealerInfo,
@@ -896,16 +990,16 @@ Page({
   saveOrder(orderData) {
     try {
       const orders = wx.getStorageSync('dealerOrders') || []
-      
+
       // 检查是否已存在相同订单号的订单
       const existingIndex = orders.findIndex(order => order.orderNo === orderData.orderNo)
-      
+
       if (existingIndex >= 0) {
         orders[existingIndex] = orderData
       } else {
         orders.unshift(orderData)
       }
-      
+
       wx.setStorageSync('dealerOrders', orders)
     } catch (error) {
       console.error('保存订单失败:', error)
@@ -933,67 +1027,37 @@ Page({
   async testDataConnection() {
     try {
       wx.showLoading({ title: '测试数据连接...' })
-      
-      // 测试鸿日库存查询
-      console.log('=== 开始测试鸿日库存数据连接 ===')
-      const inventoryResult = await wx.cloud.callFunction({
-        name: 'car-inventory',
+
+      console.log('=== 测试新的dealer-order云函数连接 ===')
+      const testResult = await wx.cloud.callFunction({
+        name: 'dealer-order',
         data: {
-          action: 'queryHR',
+          action: 'getSeriesList',
           data: {} // 不添加任何筛选条件，获取所有数据
         }
       })
-      
-      console.log('鸿日库存测试结果:', inventoryResult)
-      
-      if (inventoryResult.result && inventoryResult.result.data) {
-        const data = inventoryResult.result.data
-        console.log('鸿日库存数据总数:', data.length)
-        
-        if (data.length > 0) {
-          console.log('鸿日库存数据示例（前5条）:')
-          data.slice(0, 5).forEach((item, index) => {
-            console.log(`第${index + 1}条完整数据:`, item)
-            console.log(`  - VIN: ${item.VIN}`)
-            console.log(`  - model_series: ${item.model_series}`)
-            console.log(`  - model_type: ${item.model_type}`)
-            console.log(`  - configuration: ${item.configuration}`)
-            console.log(`  - color: ${item.color}`)
-            console.log(`  - inventory_status: ${item.inventory_status}`)
-          })
-          
-          // 统计系列分布
-          const seriesStats = {}
-          data.forEach(item => {
-            if (item.model_series) {
-              seriesStats[item.model_series] = (seriesStats[item.model_series] || 0) + 1
-            }
-          })
-          console.log('系列分布统计:', seriesStats)
-          
-          wx.showModal({
-            title: '数据连接测试',
-            content: `鸿日库存数据连接成功！\n\n总数据量: ${data.length}条\n系列分布: ${Object.keys(seriesStats).join(', ')}\n\n详细信息请查看控制台`,
-            showCancel: false
-          })
-        } else {
-          wx.showModal({
-            title: '数据连接测试',
-            content: '鸿日库存数据库连接成功，但暂无数据。\n\n请先添加库存数据再进行测试。',
-            showCancel: false
-          })
-        }
-      } else {
-        console.log('鸿日库存查询失败:', inventoryResult)
+
+      console.log('dealer-order云函数测试结果:', testResult)
+
+      if (testResult.result && testResult.result.code === 0 && testResult.result.data) {
+        const data = testResult.result.data
+        console.log('车型系列数据总数:', data.length)
+
         wx.showModal({
           title: '数据连接测试',
-          content: '鸿日库存数据连接失败，请检查云函数配置。',
+          content: `dealer-order云函数连接成功！\n\n车型系列数量: ${data.length}个\n\n详细信息请查看控制台`,
+          showCancel: false
+        })
+      } else {
+        wx.showModal({
+          title: '数据连接测试',
+          content: 'dealer-order云函数连接失败，请检查云函数配置。',
           showCancel: false
         })
       }
-      
+
       wx.hideLoading()
-      
+
     } catch (error) {
       wx.hideLoading()
       console.error('测试数据连接失败:', error)
@@ -1011,11 +1075,11 @@ Page({
     const priceData = this.findPriceByModel(model)
     if (priceData) {
       // 根据经销商等级返回对应价格
-      return this.data.dealerLevel === '高级批发商' 
+      return this.data.dealerLevel === '高级批发商'
         ? priceData.Senior_Dealer_price || priceData.county_dealer_price
         : priceData.Junior_Dealer_price || priceData.township_dealer_price
     }
-    
+
     // 如果没有找到实时价格，使用固定价格映射作为备用
     const priceMap = {
       'S1-23款磷酸铁锂4kw心动版': this.data.dealerLevel === '高级批发商' ? 21900 : 25800,
@@ -1023,19 +1087,19 @@ Page({
       'S1Max-23款铅酸4kw豪华版': this.data.dealerLevel === '高级批发商' ? 27580 : 31500,
       '御虎新款-自动档': 35700
     }
-    
+
     // 尝试精确匹配
     if (priceMap[model]) {
       return priceMap[model]
     }
-    
+
     // 模糊匹配
     for (const key in priceMap) {
       if (model.includes(key.split('-')[0]) || key.includes(model)) {
         return priceMap[key]
       }
     }
-    
+
     // 默认价格
     return this.data.dealerLevel === '高级批发商' ? 20000 : 24000
   },
@@ -1043,23 +1107,23 @@ Page({
   // 工具方法：从价格数据中查找匹配的车型价格
   findPriceByModel(model) {
     const pricesData = this.data.vehiclePricesData
-    
+
     if (!pricesData || pricesData.length === 0) {
       return null
     }
-    
+
     console.log('从价格数据中查找车型:', model)
     console.log('可用价格数据条数:', pricesData.length)
-    
+
     // 精确匹配车型名称
-    let matchedPrice = pricesData.find(price => 
+    let matchedPrice = pricesData.find(price =>
       this.matchField(price.model_type, model)
     )
     if (matchedPrice) {
       console.log('车型精确匹配成功:', matchedPrice)
       return matchedPrice
     }
-    
+
     // 模糊匹配：检查车型名称是否包含价格表中的型号
     matchedPrice = pricesData.find(price => {
       return this.matchField(price.model_type, model)
@@ -1068,7 +1132,7 @@ Page({
       console.log('车型模糊匹配成功:', matchedPrice)
       return matchedPrice
     }
-    
+
     // 通过系列匹配：提取车型系列进行匹配
     const selectedSeries = this.data.selectedSeries
     if (selectedSeries) {
@@ -1080,7 +1144,7 @@ Page({
         return matchedPrice
       }
     }
-    
+
     console.log('未找到匹配的价格数据')
     return null
   },
@@ -1089,111 +1153,6 @@ Page({
   isLowPowerModel(model) {
     const lowPowerModels = ['S1-23款磷酸铁锂4kw心动版']
     return lowPowerModels.some(lowModel => model.includes(lowModel) || lowModel.includes(model))
-  },
-
-  // 创建测试数据 - 临时调试函数
-  async createTestData() {
-    try {
-      wx.showLoading({ title: '创建测试数据...' })
-      
-      // 测试数据
-      const testData = [
-        {
-          VIN: 'TEST001',
-          model_series: '鸿日S1',
-          model_type: 'S1标准版',
-          color: '红色',
-          configuration: '标准配置',
-          additional_configuration: '无',
-          entry_date: '2025-01-20',
-          headquarter_shipment_date: '2025-01-18'
-        },
-        {
-          VIN: 'TEST002',
-          model_series: '鸿日S1',
-          model_type: 'S1豪华版',
-          color: '蓝色',
-          configuration: '豪华配置',
-          additional_configuration: '真皮座椅',
-          entry_date: '2025-01-20',
-          headquarter_shipment_date: '2025-01-18'
-        },
-        {
-          VIN: 'TEST003',
-          model_series: '鸿日S1Pro',
-          model_type: 'S1Pro运动版',
-          color: '白色',
-          configuration: '运动配置',
-          additional_configuration: '运动套件',
-          entry_date: '2025-01-21',
-          headquarter_shipment_date: '2025-01-19'
-        },
-        {
-          VIN: 'TEST004',
-          model_series: '鸿日S1Max',
-          model_type: 'S1Max旗舰版',
-          color: '黑色',
-          configuration: '旗舰配置',
-          additional_configuration: '全景天窗',
-          entry_date: '2025-01-21',
-          headquarter_shipment_date: '2025-01-19'
-        },
-        {
-          VIN: 'TEST005',
-          model_series: '御虎',
-          model_type: '御虎标准版',
-          color: '银色',
-          configuration: '标准配置',
-          additional_configuration: '无',
-          entry_date: '2025-01-22',
-          headquarter_shipment_date: '2025-01-20'
-        }
-      ]
-      
-      console.log('准备添加测试数据:', testData)
-      
-      // 调用云函数批量添加数据
-      const result = await wx.cloud.callFunction({
-        name: 'car-inventory',
-        data: {
-          action: 'addManyHR',
-          data: {
-            items: testData
-          }
-        }
-      })
-      
-      console.log('添加测试数据结果:', result)
-      
-      wx.hideLoading()
-      
-      if (result.result && result.result.code === 0) {
-        wx.showModal({
-          title: '测试数据创建成功',
-          content: `成功添加 ${testData.length} 条测试数据！\n\n包含车型系列：\n- 鸿日S1\n- 鸿日S1Pro\n- 鸿日S1Max\n- 御虎\n\n现在可以测试级联选择功能了。`,
-          showCancel: false,
-          success: () => {
-            // 重新加载数据
-            this.loadInventoryAndPriceData()
-          }
-        })
-      } else {
-        wx.showModal({
-          title: '测试数据创建失败',
-          content: `创建失败：${result.result ? result.result.message : '未知错误'}`,
-          showCancel: false
-        })
-      }
-      
-    } catch (error) {
-      wx.hideLoading()
-      console.error('创建测试数据失败:', error)
-      wx.showModal({
-        title: '测试数据创建失败',
-        content: `创建失败：${error.message}`,
-        showCancel: false
-      })
-    }
   },
 
   // 检查当前数据状态 - 临时调试函数
@@ -1207,7 +1166,7 @@ Page({
       selectedConfig: this.data.selectedConfig,
       selectedColor: this.data.selectedColor
     }
-    
+
     console.log('=== 当前页面数据状态检查 ===')
     console.log('鸿日库存数据条数:', currentData.hongriInventoryData.length)
     console.log('车型系列列表:', currentData.seriesList)
@@ -1218,14 +1177,14 @@ Page({
       config: currentData.selectedConfig,
       color: currentData.selectedColor
     })
-    
+
     // 如果有库存数据，重新提取系列列表
     if (currentData.hongriInventoryData.length > 0) {
       console.log('重新提取车型系列列表...')
       const newSeriesList = this.extractSeriesList(currentData.hongriInventoryData)
       console.log('重新提取的系列列表:', newSeriesList)
     }
-    
+
     wx.showModal({
       title: '数据状态检查',
       content: `库存数据: ${currentData.hongriInventoryData.length}条\n系列列表: ${currentData.seriesList.length}个\n价格数据: ${currentData.vehiclePricesData.length}条\n\n详细信息请查看控制台`,
@@ -1237,80 +1196,117 @@ Page({
   async testDealerPriceConnection() {
     try {
       wx.showLoading({ title: '测试经销商价格表连接...' })
-      
-      console.log('=== 开始测试经销商价格表数据连接 ===')
-      const priceResult = await wx.cloud.callFunction({
-        name: 'car-inventory',
+
+      console.log('=== 开始获取车型系列列表 ===')
+      const orderResult = await wx.cloud.callFunction({
+        name: 'dealer-order',
         data: {
-          action: 'queryVehiclePrices',
-          data: {} // 不添加任何筛选条件，获取所有价格数据
+          action: 'getSeriesList',
+          data: {} // 不添加任何筛选条件，获取所有数据
         }
       })
-      
-      console.log('经销商价格表测试结果:', priceResult)
-      
-      if (priceResult.result && priceResult.result.data) {
-        const data = priceResult.result.data
-        console.log('经销商价格数据总数:', data.length)
-        
-        if (data.length > 0) {
-          console.log('经销商价格数据示例（前5条）:')
-          data.slice(0, 5).forEach((item, index) => {
-            console.log(`第${index + 1}条完整数据:`, item)
-            console.log(`  - model_series: ${item.model_series}`)
-            console.log(`  - model_type: ${item.model_type}`)
-            console.log(`  - configuration: ${item.configuration}`)
-            console.log(`  - color: ${item.color}`)
-            console.log(`  - Senior_Dealer_price: ${item.Senior_Dealer_price}`)
-            console.log(`  - Junior_Dealer_price: ${item.Junior_Dealer_price}`)
-          })
-          
-          // 统计系列分布
-          const seriesStats = {}
-          data.forEach(item => {
-            if (item.model_series) {
-              seriesStats[item.model_series] = (seriesStats[item.model_series] || 0) + 1
-            }
-          })
-          console.log('价格表系列分布统计:', seriesStats)
-          
-          wx.showModal({
-            title: '经销商价格表连接测试',
-            content: `经销商价格表连接成功！\n\n总价格数据: ${data.length}条\n系列分布: ${Object.keys(seriesStats).join(', ')}\n\n详细信息请查看控制台`,
-            showCancel: false,
-            success: () => {
-              // 更新价格数据到页面
-              this.setData({
-                vehiclePricesData: data
-              })
-            }
-          })
-        } else {
-          wx.showModal({
-            title: '经销商价格表连接测试',
-            content: '经销商价格表连接成功，但暂无数据。\n\n请先添加价格数据再进行测试。',
-            showCancel: false
-          })
+
+      console.log('车型系列查询结果:', orderResult)
+
+      console.log('=== 开始测试车辆价格查询 ===')
+      const priceResult = await wx.cloud.callFunction({
+        name: 'dealer-order',
+        data: {
+          action: 'getVehiclePrice',
+          data: {
+            series: '鸿日S1',
+            model: 'S1标准版'
+          }
         }
-      } else {
-        console.log('经销商价格表查询失败:', priceResult)
+      })
+
+      console.log('车辆价格查询结果:', priceResult)
+
+      wx.hideLoading()
+
+      if (orderResult.result && orderResult.result.code === 0) {
+        const seriesData = orderResult.result.data
+        const priceData = priceResult.result && priceResult.result.code === 0 ? priceResult.result.data : null
+
         wx.showModal({
-          title: '经销商价格表连接测试',
-          content: '经销商价格表连接失败，请检查云函数配置和数据表名。',
+          title: '经销商功能测试',
+          content: `dealer-order云函数连接成功！\n\n车型系列: ${seriesData.length}个\n价格查询: ${priceData ? '成功' : '失败'}\n\n详细信息请查看控制台`,
+          showCancel: false
+        })
+      } else {
+        wx.showModal({
+          title: '经销商功能测试',
+          content: 'dealer-order云函数连接失败，请检查云函数配置。',
           showCancel: false
         })
       }
-      
-      wx.hideLoading()
-      
+
     } catch (error) {
       wx.hideLoading()
-      console.error('测试经销商价格表连接失败:', error)
+      console.error('测试经销商功能失败:', error)
       wx.showModal({
-        title: '经销商价格表连接测试',
-        content: `连接测试失败：${error.message}`,
+        title: '经销商功能测试',
+        content: `测试失败：${error.message}`,
         showCancel: false
       })
     }
+  },
+
+  // 测试新的dealer-order云函数 - 临时调试函数
+  async testNewCloudFunction() {
+    try {
+      wx.showLoading({ title: '测试新云函数...' })
+
+      console.log('=== 开始测试新的dealer-order云函数 ===')
+      const result = await wx.cloud.callFunction({
+        name: 'dealer-order',
+        data: {
+          action: 'getSeriesList',
+          data: {}
+        }
+      })
+
+      console.log('新云函数测试结果:', result)
+      console.log('详细结果分析:', {
+        errMsg: result.errMsg,
+        hasResult: !!result.result,
+        resultType: typeof result.result,
+        result: result.result
+      })
+
+      wx.hideLoading()
+
+      if (result.result) {
+        wx.showModal({
+          title: '新云函数测试结果',
+          content: `调用状态: ${result.errMsg}\n返回代码: ${result.result.code}\n消息: ${result.result.message}\n数据条数: ${result.result.data ? result.result.data.length : 0}`,
+          showCancel: false
+        })
+      } else {
+        wx.showModal({
+          title: '新云函数测试失败',
+          content: `错误信息: ${result.errMsg}\n可能原因: 云函数未部署或部署失败`,
+          showCancel: false
+        })
+      }
+
+    } catch (error) {
+      wx.hideLoading()
+      console.error('测试新云函数失败:', error)
+      wx.showModal({
+        title: '新云函数测试异常',
+        content: `异常信息: ${error.message}`,
+        showCancel: false
+      })
+    }
+  },
+
+  // 创建测试数据 - 临时调试函数（已废弃，使用新的dealer-order云函数）
+  async createTestData() {
+    wx.showModal({
+      title: '提示',
+      content: '此功能已废弃，请使用新的dealer-order云函数进行数据管理。',
+      showCancel: false
+    })
   },
 }) 
