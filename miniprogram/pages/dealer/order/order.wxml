@@ -1,0 +1,279 @@
+<!-- Tab导航 -->
+<view class="tab-nav">
+  <view class="tab-item active">下单</view>
+  <view class="tab-item" bindtap="switchToOrders">订单</view>
+</view>
+
+<!-- 价格处理的WXS -->
+<wxs module="utils">
+  var abs = function(num) {
+    return num < 0 ? -num : num;
+  };
+  
+  module.exports = {
+    abs: abs
+  };
+</wxs>
+
+<!-- 加载状态 -->
+<view class="loading-overlay" wx:if="{{isLoadingInventory}}">
+  <view class="loading-content">
+    <view class="loading-spinner"></view>
+    <text class="loading-text">正在加载车型数据...</text>
+  </view>
+</view>
+
+<!-- 主要内容 -->
+<scroll-view scroll-y class="main-content">
+  <!-- 第一部分：配置车辆 -->
+  <view class="form-section">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="icon">🚗</text>
+        <text>配置车辆</text>
+      </view>
+      <view class="data-status" wx:if="{{!isLoadingInventory}}">
+        <view class="status-info">
+          <text class="status-text">{{hongriInventoryData.length > 0 ? '实时库存数据' : '备用数据'}}</text>
+          <text class="status-count" wx:if="{{hongriInventoryData.length > 0}}">{{hongriInventoryData.length}}辆在库</text>
+          <text class="price-status">{{vehiclePricesData.length > 0 ? '实时价格' : '备用价格'}}</text>
+        </view>
+        <view class="action-buttons">
+          <view class="test-btn" bindtap="testDataConnection">
+            <text class="test-icon">🔍</text>
+          </view>
+          <view class="price-btn" bindtap="testDealerPriceConnection">
+            <text class="price-icon">💰</text>
+          </view>
+          <view class="create-btn" bindtap="createTestData">
+            <text class="create-icon">➕</text>
+          </view>
+          <view class="check-btn" bindtap="checkCurrentDataStatus">
+            <text class="check-icon">📋</text>
+          </view>
+          <view class="refresh-btn" bindtap="refreshInventoryData">
+            <text class="refresh-icon">↻</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <view class="form-content">
+      <!-- 经销商信息 -->
+      <view class="form-item">
+        <text class="label">经销商</text>
+        <text class="value">{{dealerInfo}}</text>
+      </view>
+
+      <!-- 车型系列 -->
+      <view class="form-item" bindtap="showSeriesPicker">
+        <text class="label">车型系列</text>
+        <view class="picker-display">
+          <text class="picker-text {{selectedSeries ? '' : 'placeholder'}}">
+            {{selectedSeries || '请选择车型系列'}}
+          </text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 车型 -->
+      <view class="form-item" bindtap="showModelPicker">
+        <text class="label">车型</text>
+        <view class="picker-display">
+          <text class="picker-text {{selectedModel ? '' : 'placeholder'}}">
+            {{selectedModel || '请选择车型'}}
+          </text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 配置信息 -->
+      <view class="form-item" bindtap="showConfigPicker">
+        <text class="label">配置</text>
+        <view class="picker-display">
+          <text class="picker-text {{selectedConfig ? '' : 'placeholder'}}">
+            {{selectedConfig || '请选择配置'}}
+          </text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 颜色 -->
+      <view class="form-item" bindtap="showColorPicker">
+        <text class="label">颜色</text>
+        <view class="picker-display">
+          <view class="color-display" wx:if="{{selectedColor}}">
+            <view class="color-dot" style="background-color: {{selectedColorCode}};"></view>
+            <text class="picker-text">{{selectedColor}}</text>
+          </view>
+          <text class="picker-text placeholder" wx:else>请选择颜色</text>
+          <text class="picker-arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 基础价格 -->
+      <view class="form-item">
+        <text class="label">基础价格</text>
+        <view class="price-tag">¥{{basePrice}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 第二部分：增加配置 -->
+  <view class="form-section">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="icon">➕</text>
+        <text>增加配置</text>
+      </view>
+    </view>
+    
+    <view class="form-content">
+      <view class="config-list">
+        <view 
+          class="config-item {{item.selected ? 'selected' : ''}}" 
+          wx:for="{{configOptions}}" 
+          wx:key="id"
+          bindtap="toggleConfig"
+          data-index="{{index}}"
+        >
+          <view class="config-content">
+            <view class="config-left">
+              <text class="config-icon">{{item.selected ? '✓' : '○'}}</text>
+              <view class="config-info">
+                <text class="config-name">{{item.name}}</text>
+                <text class="config-desc" wx:if="{{item.desc}}">{{item.desc}}</text>
+              </view>
+            </view>
+            <view class="config-price {{item.price < 0 ? 'negative' : ''}}">
+              {{item.price < 0 ? '-¥' + utils.abs(item.price) : '¥' + item.price}}
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 配置小计 -->
+      <view class="config-total">
+        <view class="total-row">
+          <text class="total-label">配置小计</text>
+          <text class="total-price">¥{{configTotalPrice}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 第三部分：其他费用 -->
+  <view class="form-section">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="icon">🧮</text>
+        <text>其他费用</text>
+      </view>
+    </view>
+    
+    <view class="form-content">
+      <view class="form-item">
+        <text class="label">保险+装车费</text>
+        <text class="value">¥{{otherFees.insurance}}</text>
+      </view>
+      <view class="form-item">
+        <text class="label">运费</text>
+        <text class="value">¥{{otherFees.shipping}}</text>
+      </view>
+      <view class="form-item">
+        <text class="label">加价</text>
+        <text class="value">¥{{otherFees.markup}}</text>
+      </view>
+      <view class="form-item">
+        <text class="label">奖励核减</text>
+        <text class="value">¥{{otherFees.discount}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 第四部分：提车方式 -->
+  <view class="form-section">
+    <view class="section-header">
+      <view class="section-title">
+        <text class="icon">🚚</text>
+        <text>提车方式</text>
+      </view>
+    </view>
+    
+    <view class="form-content">
+      <view class="pickup-options">
+        <view 
+          class="pickup-item {{deliveryMethod === item.value ? 'selected' : ''}}"
+          wx:for="{{deliveryOptions}}" 
+          wx:key="value"
+          bindtap="selectDeliveryMethod"
+          data-value="{{item.value}}"
+        >
+          <view class="pickup-content">
+            <view class="pickup-left">
+              <text class="pickup-icon">{{deliveryMethod === item.value ? '●' : '○'}}</text>
+              <text class="pickup-name">{{item.name}}</text>
+            </view>
+            <text class="pickup-fee">{{item.fee === 0 ? '免费' : '¥' + item.fee}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 总价计算 -->
+  <view class="total-section">
+    <view class="total-breakdown">
+      <view class="breakdown-item">
+        <text class="breakdown-label">基础价格</text>
+        <text class="breakdown-value">¥{{basePrice}}</text>
+      </view>
+      <view class="breakdown-item">
+        <text class="breakdown-label">增加配置</text>
+        <text class="breakdown-value">+¥{{configTotalPrice}}</text>
+      </view>
+      <view class="breakdown-item">
+        <text class="breakdown-label">其他费用</text>
+        <text class="breakdown-value">+¥{{otherFeesTotalPrice}}</text>
+      </view>
+      <view class="breakdown-item">
+        <text class="breakdown-label">提车服务费</text>
+        <text class="breakdown-value">+¥{{deliveryFee}}</text>
+      </view>
+    </view>
+    <view class="total-final">
+      <text class="total-label">订单总额</text>
+      <text class="total-amount">¥{{totalAmount}}</text>
+    </view>
+  </view>
+</scroll-view>
+
+<!-- 底部操作栏 -->
+<view class="bottom-actions">
+  <button class="btn btn-secondary" bindtap="addToCart">加入购物车</button>
+  <button class="btn btn-primary" bindtap="submitOrder">提交订单</button>
+</view>
+
+<!-- 选择器弹窗 -->
+<view class="picker-modal {{showPicker ? 'show' : ''}}" bindtap="hidePicker">
+  <view class="picker-content" catchtap="stopPropagation">
+    <view class="picker-header">
+      <text class="picker-title">{{pickerTitle}}</text>
+      <text class="picker-close" bindtap="hidePicker">✕</text>
+    </view>
+    <scroll-view scroll-y class="picker-list">
+      <view 
+        class="picker-option {{currentPickerValue === item.value ? 'selected' : ''}}"
+        wx:for="{{pickerOptions}}" 
+        wx:key="value"
+        bindtap="selectPickerOption"
+        data-value="{{item.value}}"
+        data-label="{{item.label}}"
+        data-data="{{item}}"
+      >
+        <text class="option-text">{{item.label}}</text>
+        <text class="option-check" wx:if="{{currentPickerValue === item.value}}">✓</text>
+      </view>
+    </scroll-view>
+  </view>
+</view> 

@@ -16,7 +16,10 @@
     "pages/user-manage/list/list",
     "pages/data-edit/list/list",
     "pages/search/search",
-    "pages/logs/logs"
+    "pages/logs/logs",
+    "pages/dealer/order/order",
+    "pages/dealer/orders/orders",
+    "pages/dealer/orders/detail/detail"
   ],
   "window": {
     "navigationBarTextStyle": "black",

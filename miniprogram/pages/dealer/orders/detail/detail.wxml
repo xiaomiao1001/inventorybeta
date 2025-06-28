@@ -1,0 +1,235 @@
+<!-- 订单状态头部 -->
+<view class="status-header">
+  <view class="status-info">
+    <text class="status-emoji">{{getStatusEmoji(orderDetail.status)}}</text>
+    <text class="status-text">{{getStatusText(orderDetail.status)}}</text>
+    <text class="order-no">订单号: {{orderDetail.orderNo}}</text>
+  </view>
+  <view class="estimate-time" wx:if="{{orderDetail.status === 'submitted'}}">
+    <text class="estimate-label">预计处理时间</text>
+    <text class="estimate-value">1-2个工作日</text>
+  </view>
+</view>
+
+<!-- 状态流程 -->
+<view class="status-timeline">
+  <view class="timeline-item {{getTimelineStatus('submitted', orderDetail.status)}}">
+    <view class="timeline-icon">
+      <text class="icon-text">{{getTimelineStatus('submitted', orderDetail.status) === 'completed' ? '✓' : '●'}}</text>
+    </view>
+    <view class="timeline-content">
+      <text class="timeline-title">订单已提交</text>
+      <text class="timeline-time">{{orderDetail.createdAt ? formatTime(orderDetail.createdAt) : ''}}</text>
+    </view>
+  </view>
+
+  <view class="timeline-item {{getTimelineStatus('confirmed', orderDetail.status)}}">
+    <view class="timeline-icon">
+      <text class="icon-text">{{getTimelineStatus('confirmed', orderDetail.status) === 'completed' ? '✓' : getTimelineStatus('confirmed', orderDetail.status) === 'current' ? '⏰' : '●'}}</text>
+    </view>
+    <view class="timeline-content">
+      <text class="timeline-title">等待确认调车</text>
+      <text class="timeline-time">{{orderDetail.status === 'submitted' ? '预计今日处理' : ''}}</text>
+    </view>
+  </view>
+
+  <view class="timeline-item {{getTimelineStatus('shipped', orderDetail.status)}}">
+    <view class="timeline-icon">
+      <text class="icon-text">{{getTimelineStatus('shipped', orderDetail.status) === 'completed' ? '✓' : '●'}}</text>
+    </view>
+    <view class="timeline-content">
+      <text class="timeline-title">准备发货</text>
+      <text class="timeline-time">{{getTimelineStatus('shipped', orderDetail.status) === 'pending' ? '等待上一步完成' : ''}}</text>
+    </view>
+  </view>
+
+  <view class="timeline-item {{getTimelineStatus('completed', orderDetail.status)}}">
+    <view class="timeline-icon">
+      <text class="icon-text">{{getTimelineStatus('completed', orderDetail.status) === 'completed' ? '✓' : '●'}}</text>
+    </view>
+    <view class="timeline-content">
+      <text class="timeline-title">订单完成</text>
+      <text class="timeline-time">{{getTimelineStatus('completed', orderDetail.status) === 'pending' ? '等待上一步完成' : ''}}</text>
+    </view>
+  </view>
+</view>
+
+<!-- 主要内容 -->
+<scroll-view scroll-y class="detail-content">
+  <!-- 车辆信息 -->
+  <view class="detail-section">
+    <view class="section-header">
+      <text class="section-title">🚗 车辆信息</text>
+    </view>
+    
+    <view class="section-content">
+      <view class="info-row">
+        <text class="info-label">经销商</text>
+        <text class="info-value">{{orderDetail.dealer}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">车型系列</text>
+        <text class="info-value">{{orderDetail.vehicleSeries}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">车型</text>
+        <text class="info-value">{{orderDetail.vehicleModel}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">配置</text>
+        <text class="info-value">{{orderDetail.vehicleConfig}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">颜色</text>
+        <view class="color-display">
+          <view class="color-dot" style="background-color: {{getColorCode(orderDetail.vehicleColor)}};"></view>
+          <text class="info-value">{{orderDetail.vehicleColor}}</text>
+        </view>
+      </view>
+      <view class="info-row">
+        <text class="info-label">基础价格</text>
+        <view class="price-highlight">¥{{orderDetail.basePrice}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 增加配置 -->
+  <view class="detail-section" wx:if="{{orderDetail.additionalConfigs && orderDetail.additionalConfigs.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">➕ 增加配置</text>
+    </view>
+    
+    <view class="section-content">
+      <view class="info-row" wx:for="{{orderDetail.additionalConfigs}}" wx:key="id">
+        <text class="info-label">{{item.name}}</text>
+        <view class="price-highlight {{item.price < 0 ? 'negative' : ''}}">
+          {{item.price < 0 ? '-' : ''}}¥{{Math.abs(item.price)}}
+        </view>
+      </view>
+      <view class="info-row total-row">
+        <text class="info-label total-label">配置小计</text>
+        <text class="total-price">¥{{orderDetail.configTotalPrice}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 其他费用 -->
+  <view class="detail-section" wx:if="{{orderDetail.otherFeesTotalPrice > 0}}">
+    <view class="section-header">
+      <text class="section-title">🧮 其他费用</text>
+    </view>
+    
+    <view class="section-content">
+      <view class="info-row" wx:if="{{orderDetail.otherFees.insurance > 0}}">
+        <text class="info-label">保险+装车费</text>
+        <text class="info-value">¥{{orderDetail.otherFees.insurance}}</text>
+      </view>
+      <view class="info-row" wx:if="{{orderDetail.otherFees.shipping > 0}}">
+        <text class="info-label">运费</text>
+        <text class="info-value">¥{{orderDetail.otherFees.shipping}}</text>
+      </view>
+      <view class="info-row" wx:if="{{orderDetail.otherFees.markup > 0}}">
+        <text class="info-label">加价</text>
+        <text class="info-value">¥{{orderDetail.otherFees.markup}}</text>
+      </view>
+      <view class="info-row" wx:if="{{orderDetail.otherFees.discount > 0}}">
+        <text class="info-label">奖励核减</text>
+        <text class="info-value">¥{{orderDetail.otherFees.discount}}</text>
+      </view>
+      <view class="info-row total-row">
+        <text class="info-label total-label">费用小计</text>
+        <text class="total-price">¥{{orderDetail.otherFeesTotalPrice}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 提车方式 -->
+  <view class="detail-section">
+    <view class="section-header">
+      <text class="section-title">🚚 提车方式</text>
+    </view>
+    
+    <view class="section-content">
+      <view class="info-row">
+        <text class="info-label">提车方式</text>
+        <text class="info-value">{{getDeliveryMethodText(orderDetail.deliveryMethod)}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">服务费用</text>
+        <text class="info-value {{orderDetail.deliveryFee === 0 ? 'free' : ''}}">
+          {{orderDetail.deliveryFee === 0 ? '免费' : '¥' + orderDetail.deliveryFee}}
+        </text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 订单金额汇总 -->
+  <view class="total-summary">
+    <view class="summary-breakdown">
+      <view class="breakdown-item">
+        <text class="breakdown-label">基础价格</text>
+        <text class="breakdown-value">¥{{orderDetail.basePrice}}</text>
+      </view>
+      <view class="breakdown-item" wx:if="{{orderDetail.configTotalPrice > 0}}">
+        <text class="breakdown-label">增加配置</text>
+        <text class="breakdown-value">+¥{{orderDetail.configTotalPrice}}</text>
+      </view>
+      <view class="breakdown-item" wx:if="{{orderDetail.otherFeesTotalPrice > 0}}">
+        <text class="breakdown-label">其他费用</text>
+        <text class="breakdown-value">+¥{{orderDetail.otherFeesTotalPrice}}</text>
+      </view>
+      <view class="breakdown-item" wx:if="{{orderDetail.deliveryFee > 0}}">
+        <text class="breakdown-label">提车服务费</text>
+        <text class="breakdown-value">+¥{{orderDetail.deliveryFee}}</text>
+      </view>
+    </view>
+    <view class="final-total">
+      <text class="total-label">订单总额</text>
+      <text class="total-amount">¥{{orderDetail.totalAmount}}</text>
+    </view>
+  </view>
+
+  <!-- 订单信息 -->
+  <view class="detail-section">
+    <view class="section-header">
+      <text class="section-title">ℹ️ 订单信息</text>
+    </view>
+    
+    <view class="section-content">
+      <view class="info-row">
+        <text class="info-label">订单号</text>
+        <text class="info-value">{{orderDetail.orderNo}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">下单时间</text>
+        <text class="info-value">{{formatTime(orderDetail.createdAt)}}</text>
+      </view>
+      <view class="info-row" wx:if="{{orderDetail.status !== 'pending'}}">
+        <text class="info-label">提交时间</text>
+        <text class="info-value">{{formatTime(orderDetail.updatedAt)}}</text>
+      </view>
+      <view class="info-row" wx:if="{{orderDetail.status === 'confirmed' || orderDetail.status === 'shipped' || orderDetail.status === 'completed'}}">
+        <text class="info-label">确认时间</text>
+        <text class="info-value">待确认</text>
+      </view>
+      <view class="info-row" wx:if="{{orderDetail.status === 'shipped' || orderDetail.status === 'completed'}}">
+        <text class="info-label">发货时间</text>
+        <text class="info-value">待发货</text>
+      </view>
+    </view>
+  </view>
+</scroll-view>
+
+<!-- 底部操作栏 -->
+<view class="bottom-actions" wx:if="{{orderDetail.status === 'pending'}}">
+  <button class="action-btn edit-btn" bindtap="editOrder">编辑订单</button>
+  <button class="action-btn submit-btn" bindtap="submitOrder">提交订单</button>
+</view>
+
+<!-- 加载状态 -->
+<view class="loading-overlay" wx:if="{{loading}}">
+  <view class="loading-content">
+    <view class="loading-icon">⏳</view>
+    <text class="loading-text">加载中...</text>
+  </view>
+</view> 

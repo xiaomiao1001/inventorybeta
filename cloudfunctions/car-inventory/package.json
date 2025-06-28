@@ -1,20 +1,20 @@
 {
     "name": "@function/car-inventory",
     "tcbRepo": {
-      "type": "function"
+        "type": "function"
     },
     "scripts": {
-      "tcb-ff": "tcb-ff",
-      "dev": "tcb cloudfunction run -w",
-      "deploy": "tcb cloudfunction deploy"
+        "tcb-ff": "tcb-ff",
+        "dev": "tcb cloudfunction run -w",
+        "deploy": "tcb cloudfunction deploy"
     },
     "dependencies": {
-      "wx-server-sdk": "^2.6.3",
-      "@cloudbase/node-sdk": "^3.7.0"
+        "@cloudbase/node-sdk": "^3.10.1",
+        "wx-server-sdk": "^2.6.3"
     },
     "devDependencies": {
-      "@cloudbase/functions-framework": "^1.8.0"
+        "@cloudbase/functions-framework": "^1.8.0"
     },
     "version": "1.0.0",
     "main": "index.js"
-  }
+}

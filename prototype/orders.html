@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单列表</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f7f8fa;
+        }
+        .status-bar {
+            background: #000;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .nav-bar {
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .tab-item {
+            transition: all 0.3s ease;
+        }
+        .tab-item.active {
+            color: #0066cc;
+            border-bottom: 2px solid #0066cc;
+        }
+        .filter-chip {
+            background: #f0f0f0;
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .filter-chip.active {
+            background: #0066cc;
+            color: white;
+        }
+        .order-card {
+            background: #fff;
+            border-radius: 12px;
+            margin: 8px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .status-badge {
+            border-radius: 12px;
+            padding: 4px 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-submitted { background: #d1ecf1; color: #0c5460; }
+        .status-confirmed { background: #d4edda; color: #155724; }
+        .status-shipped { background: #e2e3e5; color: #383d41; }
+        .status-completed { background: #d1e7dd; color: #0f5132; }
+        .vehicle-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <!-- 状态栏 -->
+    <div class="status-bar h-11 flex items-center justify-between px-6">
+        <div class="flex items-center space-x-1">
+            <span>9:41</span>
+        </div>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-sm"></i>
+            <i class="fas fa-wifi text-sm"></i>
+            <i class="fas fa-battery-three-quarters text-sm"></i>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="nav-bar h-16 flex items-center justify-between px-4">
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-chevron-left text-gray-600 text-lg"></i>
+            <h1 class="text-lg font-semibold text-gray-800">我的订单</h1>
+        </div>
+        <i class="fas fa-search text-gray-600"></i>
+    </div>
+
+    <!-- Tab导航 -->
+    <div class="bg-white px-4 flex">
+        <div class="tab-item flex-1 text-center py-3 font-medium text-gray-500">下单</div>
+        <div class="tab-item active flex-1 text-center py-3 font-medium">订单</div>
+    </div>
+
+    <!-- 状态筛选 -->
+    <div class="bg-white px-4 py-3 border-b border-gray-100">
+        <div class="flex space-x-2 overflow-x-auto">
+            <div class="filter-chip active whitespace-nowrap">全部</div>
+            <div class="filter-chip whitespace-nowrap">待提交</div>
+            <div class="filter-chip whitespace-nowrap">已提交</div>
+            <div class="filter-chip whitespace-nowrap">已调车</div>
+            <div class="filter-chip whitespace-nowrap">已发货</div>
+            <div class="filter-chip whitespace-nowrap">已完成</div>
+        </div>
+    </div>
+
+    <!-- 批量操作栏 -->
+    <div id="batchOperations" class="bg-blue-50 px-4 py-3 border-b border-blue-200" style="display: none;">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <input type="checkbox" id="selectAll" class="mr-2 w-4 h-4 text-blue-600 rounded">
+                <label for="selectAll" class="text-sm text-gray-700">全选</label>
+                <span id="selectedCount" class="ml-3 text-sm text-blue-600">已选择 0 项</span>
+            </div>
+            <div class="space-x-2">
+                <button id="batchDelete" class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm">批量删除</button>
+                <button id="batchSubmit" class="px-3 py-1 bg-blue-500 text-white rounded text-sm">批量提交</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 订单列表 -->
+    <div class="pb-8" id="ordersList">
+        <!-- 订单将在这里动态加载 -->
+    </div>
+
+    <!-- 空状态 -->
+    <div id="emptyState" class="text-center py-16 px-4" style="display: none;">
+        <div class="text-6xl mb-4">📋</div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">暂无订单</h3>
+        <p class="text-gray-500 mb-6">您还没有创建任何订单</p>
+        <button class="bg-blue-500 text-white px-6 py-3 rounded-lg font-medium" onclick="goToOrder()">
+            立即下单
+        </button>
+    </div>
+
+    <script>
+        // 订单状态映射
+        const statusMap = {
+            'pending': { text: '待提交', class: 'status-pending' },
+            'submitted': { text: '已提交', class: 'status-submitted' },
+            'confirmed': { text: '已调车', class: 'status-confirmed' },
+            'shipped': { text: '已发货', class: 'status-shipped' },
+            'completed': { text: '已完成', class: 'status-completed' }
+        };
+
+        // 当前筛选状态
+        let currentFilter = 'all';
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadOrders();
+            initializeFilters();
+            initializeBatchOperations();
+            
+            // 检查URL参数，如果有refresh参数则强制刷新数据
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('refresh')) {
+                console.log('检测到refresh参数，强制重新加载订单数据');
+                // 清除URL参数，避免重复刷新
+                window.history.replaceState({}, document.title, window.location.pathname);
+                // 强制重新加载数据
+                setTimeout(() => {
+                    loadOrders();
+                }, 100);
+            }
+        });
+
+        // 添加页面可见性检测，当页面重新变为可见时刷新数据
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                console.log('页面重新变为可见，刷新订单数据');
+                loadOrders();
+            }
+        });
+
+        // 添加页面焦点检测，当页面重新获得焦点时刷新数据
+        window.addEventListener('focus', function() {
+            console.log('页面重新获得焦点，刷新订单数据');
+            loadOrders();
+        });
+
+        // 加载订单列表
+        function loadOrders() {
+            try {
+                const orders = JSON.parse(localStorage.getItem('dealerOrders') || '[]');
+                console.log('从localStorage加载的订单:', orders);
+                
+                if (orders.length === 0) {
+                    showEmptyState();
+                    return;
+                }
+                
+                renderOrders(orders);
+                updateBatchOperationVisibility();
+            } catch (error) {
+                console.error('加载订单失败:', error);
+                showEmptyState();
+            }
+        }
+
+        // 渲染订单列表
+        function renderOrders(orders) {
+            const ordersList = document.getElementById('ordersList');
+            const emptyState = document.getElementById('emptyState');
+            
+            // 根据当前筛选条件过滤订单
+            const filteredOrders = currentFilter === 'all' ? orders : orders.filter(order => {
+                switch(currentFilter) {
+                    case 'pending': return order.status === 'pending';
+                    case 'submitted': return order.status === 'submitted';
+                    case 'confirmed': return order.status === 'confirmed';
+                    case 'shipped': return order.status === 'shipped';
+                    case 'completed': return order.status === 'completed';
+                    default: return true;
+                }
+            });
+            
+            if (filteredOrders.length === 0) {
+                ordersList.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            // 生成订单HTML
+            ordersList.innerHTML = filteredOrders.map(order => {
+                const status = statusMap[order.status] || { text: '未知状态', class: 'status-pending' };
+                const showCheckbox = order.status === 'pending';
+                const createdDate = new Date(order.createdAt).toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                return `
+                    <div class="order-card" data-status="${order.status}" data-order-id="${order.orderNo}">
+                        <div class="p-4">
+                            <!-- 订单头部 -->
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center space-x-2">
+                                    ${showCheckbox ? `<input type="checkbox" class="order-checkbox mr-2 w-4 h-4 text-blue-600 rounded" data-order-id="${order.orderNo}">` : ''}
+                                    <div>
+                                        <span class="text-sm text-gray-500">订单号:</span>
+                                        <span class="text-sm font-medium text-gray-800">${order.orderNo}</span>
+                                    </div>
+                                </div>
+                                <div class="status-badge ${status.class}">${status.text}</div>
+                            </div>
+
+                            <!-- 车辆信息 -->
+                            <div class="mb-3 cursor-pointer" onclick="viewOrderDetail('${order.orderNo}')">
+                                <div class="font-medium text-gray-800 mb-1">${order.vehicleSeries}-${order.vehicleModel}</div>
+                                <div class="text-sm text-gray-500 mb-1">${order.vehicleConfig} · ${order.vehicleColor}</div>
+                                <div class="text-sm text-gray-400">经销商: ${order.dealer}</div>
+                            </div>
+
+                            <!-- 价格和操作 -->
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="text-lg font-semibold text-red-500">¥${order.totalAmount.toLocaleString()}</div>
+                                    <div class="text-xs text-gray-400">${createdDate}</div>
+                                </div>
+                                ${showCheckbox ? `
+                                    <div class="space-x-2">
+                                        <button class="px-3 py-1 bg-gray-100 text-gray-600 rounded text-sm" onclick="editOrder('${order.orderNo}')">编辑</button>
+                                        <button class="px-3 py-1 bg-orange-500 text-white rounded text-sm" onclick="submitSingleOrder('${order.orderNo}')">单独提交</button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 显示空状态
+        function showEmptyState() {
+            document.getElementById('ordersList').innerHTML = '';
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('batchOperations').style.display = 'none';
+        }
+
+        // 初始化筛选器
+        function initializeFilters() {
+            const filterChips = document.querySelectorAll('.filter-chip');
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    // 移除所有active类
+                    filterChips.forEach(c => c.classList.remove('active'));
+                    // 添加active类到当前点击的筛选器
+                    this.classList.add('active');
+                    
+                    // 设置当前筛选条件
+                    const filterText = this.textContent.trim();
+                    switch(filterText) {
+                        case '全部': currentFilter = 'all'; break;
+                        case '待提交': currentFilter = 'pending'; break;
+                        case '已提交': currentFilter = 'submitted'; break;
+                        case '已调车': currentFilter = 'confirmed'; break;
+                        case '已发货': currentFilter = 'shipped'; break;
+                        case '已完成': currentFilter = 'completed'; break;
+                        default: currentFilter = 'all';
+                    }
+                    
+                    // 重新加载订单
+                    loadOrders();
+                });
+            });
+        }
+
+        // 初始化批量操作
+        function initializeBatchOperations() {
+            // 全选功能
+            document.getElementById('selectAll').addEventListener('change', function() {
+                const checkboxes = document.querySelectorAll('.order-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateSelectedCount();
+            });
+
+            // 批量提交
+            document.getElementById('batchSubmit').addEventListener('click', function() {
+                const selectedOrders = getSelectedOrders();
+                if (selectedOrders.length === 0) {
+                    alert('请选择要提交的订单');
+                    return;
+                }
+                
+                const confirmMessage = `确认批量提交 ${selectedOrders.length} 个订单？\n\n提交后将等待厂家确认调车。`;
+                if (confirm(confirmMessage)) {
+                    batchSubmitOrders(selectedOrders);
+                }
+            });
+
+            // 批量删除
+            document.getElementById('batchDelete').addEventListener('click', function() {
+                const selectedOrders = getSelectedOrders();
+                if (selectedOrders.length === 0) {
+                    alert('请选择要删除的订单');
+                    return;
+                }
+                
+                const confirmMessage = `确认删除 ${selectedOrders.length} 个订单？\n\n删除后无法恢复。`;
+                if (confirm(confirmMessage)) {
+                    batchDeleteOrders(selectedOrders);
+                }
+            });
+        }
+
+        // 更新批量操作栏显示状态
+        function updateBatchOperationVisibility() {
+            const pendingOrders = document.querySelectorAll('[data-status="pending"]');
+            const batchOperations = document.getElementById('batchOperations');
+            
+            if (pendingOrders.length > 0) {
+                batchOperations.style.display = 'block';
+                
+                // 监听复选框变化
+                const checkboxes = document.querySelectorAll('.order-checkbox');
+                checkboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', updateSelectedCount);
+                });
+            } else {
+                batchOperations.style.display = 'none';
+            }
+        }
+
+        // 更新选中数量
+        function updateSelectedCount() {
+            const selectedCheckboxes = document.querySelectorAll('.order-checkbox:checked');
+            const count = selectedCheckboxes.length;
+            document.getElementById('selectedCount').textContent = `已选择 ${count} 项`;
+        }
+
+        // 获取选中的订单
+        function getSelectedOrders() {
+            const selectedCheckboxes = document.querySelectorAll('.order-checkbox:checked');
+            return Array.from(selectedCheckboxes).map(checkbox => checkbox.dataset.orderId);
+        }
+
+        // 批量提交订单
+        function batchSubmitOrders(orderIds) {
+            try {
+                let orders = JSON.parse(localStorage.getItem('dealerOrders') || '[]');
+                
+                // 更新订单状态
+                orders = orders.map(order => {
+                    if (orderIds.includes(order.orderNo)) {
+                        return {
+                            ...order,
+                            status: 'submitted',
+                            submittedAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        };
+                    }
+                    return order;
+                });
+                
+                // 保存回localStorage
+                localStorage.setItem('dealerOrders', JSON.stringify(orders));
+                
+                alert(`成功提交 ${orderIds.length} 个订单！`);
+                
+                // 重新加载订单列表
+                loadOrders();
+            } catch (error) {
+                console.error('批量提交订单失败:', error);
+                alert('批量提交失败，请重试');
+            }
+        }
+
+        // 批量删除订单
+        function batchDeleteOrders(orderIds) {
+            try {
+                let orders = JSON.parse(localStorage.getItem('dealerOrders') || '[]');
+                
+                // 删除选中的订单
+                orders = orders.filter(order => !orderIds.includes(order.orderNo));
+                
+                // 保存回localStorage
+                localStorage.setItem('dealerOrders', JSON.stringify(orders));
+                
+                alert(`成功删除 ${orderIds.length} 个订单！`);
+                
+                // 重新加载订单列表
+                loadOrders();
+            } catch (error) {
+                console.error('批量删除订单失败:', error);
+                alert('批量删除失败，请重试');
+            }
+        }
+
+        // 单独提交订单
+        function submitSingleOrder(orderNo) {
+            try {
+                let orders = JSON.parse(localStorage.getItem('dealerOrders') || '[]');
+                
+                // 更新订单状态
+                orders = orders.map(order => {
+                    if (order.orderNo === orderNo) {
+                        return {
+                            ...order,
+                            status: 'submitted',
+                            submittedAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        };
+                    }
+                    return order;
+                });
+                
+                // 保存回localStorage
+                localStorage.setItem('dealerOrders', JSON.stringify(orders));
+                
+                alert('订单提交成功！');
+                
+                // 重新加载订单列表
+                loadOrders();
+            } catch (error) {
+                console.error('提交订单失败:', error);
+                alert('提交失败，请重试');
+            }
+        }
+
+        // 编辑订单
+        function editOrder(orderNo) {
+            // 跳转到下单页面，并传递订单号参数
+            window.location.href = `order.html?edit=${orderNo}`;
+        }
+
+        // 查看订单详情
+        function viewOrderDetail(orderNo) {
+            // 跳转到订单详情页面
+            window.location.href = `detail.html?orderNo=${orderNo}`;
+        }
+
+        // 跳转到下单页面
+        function goToOrder() {
+            window.location.href = 'order.html';
+        }
+
+        // Tab导航功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabText = this.textContent.trim();
+                    if (tabText === '下单') {
+                        window.location.href = 'order.html';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

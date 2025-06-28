@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经销商下单</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f7f8fa;
+        }
+        .status-bar {
+            background: #000;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .nav-bar {
+            background: #fff;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        .tab-item {
+            transition: all 0.3s ease;
+        }
+        .tab-item.active {
+            color: #0066cc;
+            border-bottom: 2px solid #0066cc;
+        }
+        .form-section {
+            background: #fff;
+            border-radius: 12px;
+            margin: 12px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .form-item {
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .form-item:last-child {
+            border-bottom: none;
+        }
+        .config-item {
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .config-item.selected {
+            border-color: #0066cc;
+            background: #f0f7ff;
+        }
+        .price-tag {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .total-price {
+            background: linear-gradient(135deg, #0066cc, #0052a3);
+            color: white;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #0066cc, #0052a3);
+            border-radius: 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,102,204,0.3);
+        }
+        .btn-secondary {
+            background: #f7f8fa;
+            border: 1px solid #d0d0d0;
+            border-radius: 24px;
+            color: #666;
+            font-weight: 600;
+        }
+        
+        /* 新增下拉菜单样式 */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: white;
+            min-width: 200px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            z-index: 1000;
+            right: 0;
+            top: 100%;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .dropdown-content.show {
+            display: block;
+        }
+        
+        .dropdown-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f7f8fa;
+        }
+        
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+        
+        .dropdown-item.selected {
+            background-color: #f0f7ff;
+            color: #0066cc;
+        }
+        
+        .clickable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .clickable:hover {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <!-- 状态栏 -->
+    <div class="status-bar h-11 flex items-center justify-between px-6">
+        <div class="flex items-center space-x-1">
+            <span>9:41</span>
+        </div>
+        <div class="flex items-center space-x-1">
+            <i class="fas fa-signal text-sm"></i>
+            <i class="fas fa-wifi text-sm"></i>
+            <i class="fas fa-battery-three-quarters text-sm"></i>
+        </div>
+    </div>
+
+    <!-- 导航栏 -->
+    <div class="nav-bar h-16 flex items-center justify-between px-4">
+        <div class="flex items-center space-x-4">
+            <i class="fas fa-chevron-left text-gray-600 text-lg"></i>
+            <h1 class="text-lg font-semibold text-gray-800">经销商下单</h1>
+        </div>
+        <i class="fas fa-ellipsis-h text-gray-600"></i>
+    </div>
+
+    <!-- Tab导航 -->
+    <div class="bg-white px-4 flex">
+        <div class="tab-item active flex-1 text-center py-3 font-medium">下单</div>
+        <div class="tab-item flex-1 text-center py-3 font-medium text-gray-500">订单</div>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="pb-20">
+        <!-- 第一部分：配置车辆 -->
+        <div class="form-section">
+            <div class="p-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-car text-blue-500 mr-2"></i>
+                    配置车辆
+                </h2>
+            </div>
+            
+            <div class="p-4 space-y-4">
+                <!-- 经销商信息 -->
+                <div class="form-item flex items-center justify-between py-3">
+                    <span class="text-gray-600">经销商</span>
+                    <span class="text-gray-800 font-medium">jxs-qx (高级批发商)</span>
+                </div>
+
+                <!-- 车型系列 -->
+                <div class="form-item flex items-center justify-between py-3 clickable" onclick="toggleDropdown('seriesDropdown')">
+                    <span class="text-gray-600">车型系列</span>
+                    <div class="flex items-center text-blue-600 dropdown">
+                        <span class="mr-2" id="selectedSeries">鸿日S1</span>
+                        <i class="fas fa-chevron-down text-sm"></i>
+                        <div id="seriesDropdown" class="dropdown-content">
+                            <div class="dropdown-item" onclick="selectSeries('鸿日S1', event)">鸿日S1</div>
+                            <div class="dropdown-item" onclick="selectSeries('鸿日S1Pro', event)">鸿日S1Pro</div>
+                            <div class="dropdown-item" onclick="selectSeries('鸿日S1Max', event)">鸿日S1Max</div>
+                            <div class="dropdown-item" onclick="selectSeries('御虎', event)">御虎</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 车型 -->
+                <div class="form-item flex items-center justify-between py-3 clickable" onclick="toggleDropdown('modelDropdown')">
+                    <span class="text-gray-600">车型</span>
+                    <div class="flex items-center text-blue-600 dropdown">
+                        <span class="mr-2" id="selectedModel">S1-23款磷酸铁锂4kw心动版</span>
+                        <i class="fas fa-chevron-down text-sm"></i>
+                        <div id="modelDropdown" class="dropdown-content">
+                            <!-- 动态加载车型选项 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 配置信息 -->
+                <div class="form-item flex items-center justify-between py-3 clickable" onclick="toggleDropdown('configDropdown')">
+                    <span class="text-gray-600">配置</span>
+                    <div class="flex items-center text-blue-600 dropdown">
+                        <span class="mr-2" id="selectedConfig">标配</span>
+                        <i class="fas fa-chevron-down text-sm"></i>
+                        <div id="configDropdown" class="dropdown-content">
+                            <!-- 动态加载配置选项 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 颜色 -->
+                <div class="form-item flex items-center justify-between py-3 clickable" onclick="toggleDropdown('colorDropdown')">
+                    <span class="text-gray-600">颜色</span>
+                    <div class="flex items-center dropdown">
+                        <div class="w-6 h-6 bg-red-500 rounded-full mr-2" id="selectedColorIcon"></div>
+                        <span class="text-gray-800 mr-2" id="selectedColor">红色</span>
+                        <i class="fas fa-chevron-down text-sm text-blue-600"></i>
+                        <div id="colorDropdown" class="dropdown-content">
+                            <!-- 动态加载颜色选项 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 基础价格 -->
+                <div class="form-item flex items-center justify-between py-3">
+                    <span class="text-gray-600">基础价格</span>
+                    <span class="price-tag px-3 py-1 text-sm" id="basePrice">¥21,900</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第二部分：增加配置 -->
+        <div class="form-section">
+            <div class="p-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-plus-circle text-green-500 mr-2"></i>
+                    增加配置
+                </h2>
+            </div>
+            
+            <div class="p-4 space-y-3">
+                <!-- 锂电池 -->
+                <div class="config-item selected p-3" onclick="toggleConfig(this, 4200)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-blue-500 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">锂电池+锂电加装手工费</div>
+                                <div class="text-sm text-gray-500">60V车型（小功率）</div>
+                            </div>
+                        </div>
+                        <span class="price-tag px-2 py-1 text-sm">¥4,200</span>
+                    </div>
+                </div>
+
+                <!-- 铅酸电池折抵 -->
+                <div class="config-item p-3" onclick="toggleConfig(this, -3120)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="far fa-circle text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">铅酸电池折抵</div>
+                            </div>
+                        </div>
+                        <span class="text-green-600 font-medium">-¥3,120</span>
+                    </div>
+                </div>
+
+                <!-- 方向助力 -->
+                <div class="config-item selected p-3" onclick="toggleConfig(this, 680)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-blue-500 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">方向助力</div>
+                            </div>
+                        </div>
+                        <span class="price-tag px-2 py-1 text-sm">¥680</span>
+                    </div>
+                </div>
+
+                <!-- 增程器 -->
+                <div class="config-item p-3" onclick="toggleConfig(this, 1400)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="far fa-circle text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">增程器</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-500">¥1,400</span>
+                    </div>
+                </div>
+
+                <!-- 柴暖 -->
+                <div class="config-item p-3" onclick="toggleConfig(this, 400)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="far fa-circle text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">柴暖</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-500">¥400</span>
+                    </div>
+                </div>
+
+                <!-- 铝轮 -->
+                <div class="config-item p-3" onclick="toggleConfig(this, 720)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="far fa-circle text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">铝轮</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-500">¥720</span>
+                    </div>
+                </div>
+
+                <!-- 坐垫 -->
+                <div class="config-item p-3" onclick="toggleConfig(this, 100)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="far fa-circle text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">坐垫</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-500">¥100</span>
+                    </div>
+                </div>
+
+                <!-- 脚垫 -->
+                <div class="config-item p-3" onclick="toggleConfig(this, 50)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="far fa-circle text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">脚垫</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-500">¥50</span>
+                    </div>
+                </div>
+
+                <!-- 轮毂盖 -->
+                <div class="config-item p-3" onclick="toggleConfig(this, 50)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="far fa-circle text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">轮毂盖</div>
+                            </div>
+                        </div>
+                        <span class="text-gray-500">¥50</span>
+                    </div>
+                </div>
+
+                <!-- 配置小计 -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">配置小计</span>
+                        <span class="text-lg font-semibold text-blue-600" id="configTotal">¥4,880</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第三部分：其他费用 -->
+        <div class="form-section">
+            <div class="p-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-calculator text-orange-500 mr-2"></i>
+                    其他费用
+                </h2>
+            </div>
+            
+            <div class="p-4 space-y-4">
+                <div class="form-item flex items-center justify-between py-3">
+                    <span class="text-gray-600">保险+装车费</span>
+                    <span class="text-gray-800 font-medium">¥80</span>
+                </div>
+                <div class="form-item flex items-center justify-between py-3">
+                    <span class="text-gray-600">运费</span>
+                    <span class="text-gray-800 font-medium">¥1,150</span>
+                </div>
+                <div class="form-item flex items-center justify-between py-3">
+                    <span class="text-gray-600">加价</span>
+                    <span class="text-gray-800 font-medium">¥400</span>
+                </div>
+                <div class="form-item flex items-center justify-between py-3">
+                    <span class="text-gray-600">奖励核减</span>
+                    <span class="text-gray-800 font-medium">¥0</span>
+                </div>
+                
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600">费用小计</span>
+                        <span class="text-lg font-semibold text-orange-600">¥1,630</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 第四部分：提车方式 -->
+        <div class="form-section">
+            <div class="p-4 border-b border-gray-100">
+                <h2 class="text-lg font-semibold text-gray-800 flex items-center">
+                    <i class="fas fa-truck text-purple-500 mr-2"></i>
+                    提车方式
+                </h2>
+            </div>
+            
+            <div class="p-4 space-y-3">
+                <div class="config-item selected p-3" onclick="selectPickupMethod(this, 0)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-blue-500 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">物流发运</div>
+                                <div class="text-sm text-gray-500">标准物流配送</div>
+                            </div>
+                        </div>
+                        <span class="text-green-600 font-medium">免费</span>
+                    </div>
+                </div>
+
+                <div class="config-item p-3" onclick="selectPickupMethod(this, 0)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="far fa-circle text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">自提</div>
+                                <div class="text-sm text-gray-500">到指定地点自取</div>
+                            </div>
+                        </div>
+                        <span class="text-green-600 font-medium">免费</span>
+                    </div>
+                </div>
+
+                <div class="config-item p-3" onclick="selectPickupMethod(this, 150)">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="far fa-circle text-gray-400 mr-3"></i>
+                            <div>
+                                <div class="font-medium text-gray-800">送车</div>
+                                <div class="text-sm text-gray-500">专人送车上门</div>
+                            </div>
+                        </div>
+                        <span class="price-tag px-2 py-1 text-sm">¥150</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 订单总计 -->
+        <div class="form-section">
+            <div class="total-price p-4 m-4">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-white opacity-90">订单总额</span>
+                    <span class="text-2xl font-bold">¥28,410</span>
+                </div>
+                <div class="text-sm text-white opacity-75">
+                    基础价格 ¥21,900 + 配置 ¥4,880 + 费用 ¥1,630
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4">
+        <div class="flex space-x-3">
+            <button class="btn-secondary flex-1 h-12 flex items-center justify-center" onclick="saveDraft()">
+                <i class="fas fa-shopping-cart mr-2"></i>
+                加入购物车
+            </button>
+            <button class="btn-primary flex-1 h-12 flex items-center justify-center text-white" onclick="submitOrder()">
+                <i class="fas fa-paper-plane mr-2"></i>
+                提交订单
+            </button>
+        </div>
+    </div>
+
+    <!-- 提示信息 -->
+    <div class="fixed bottom-20 left-4 right-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700" style="display: none;" id="orderTips">
+        <div class="flex items-start space-x-2">
+            <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+            <div>
+                <div class="font-medium mb-1">操作说明</div>
+                <div class="text-xs leading-relaxed">
+                    • 保存草稿：将当前配置保存为待提交订单，可在订单列表中批量操作<br>
+                    • 提交订单：直接提交当前订单，等待厂家确认调车
+                </div>
+            </div>
+            <button onclick="hideTips()" class="text-blue-400 hover:text-blue-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 车型数据
+        const vehicleData = {
+            '鸿日S1': {
+                models: {
+                    'S1-23款磷酸铁锂4kw心动版': {
+                        configs: ['标配'],
+                        colors: ['红色', '蓝色', '白色', '黑色'],
+                        price: { high: 21900, low: 25800 }
+                    },
+                    'S1-23款铅酸4kw基础版': {
+                        configs: ['标配'],
+                        colors: ['红色', '蓝色', '白色'],
+                        price: { high: 19800, low: 23500 }
+                    }
+                }
+            },
+            '鸿日S1Pro': {
+                models: {
+                    'S1Pro-24款铅酸4kw冠军版': {
+                        configs: ['转向+铝轮'],
+                        colors: ['红色', '蓝色', '白色', '黑色', '银色'],
+                        price: { high: 24900, low: 28300 }
+                    }
+                }
+            },
+            '鸿日S1Max': {
+                models: {
+                    'S1Max-23款铅酸4kw豪华版': {
+                        configs: ['转向+铝轮'],
+                        colors: ['红色', '蓝色', '白色', '黑色'],
+                        price: { high: 27580, low: 31500 }
+                    }
+                }
+            },
+            '御虎': {
+                models: {
+                    '御虎新款自动档': {
+                        configs: ['自动档'],
+                        colors: ['红色', '蓝色', '白色'],
+                        price: { high: 35700, low: 35700 }
+                    }
+                }
+            }
+        };
+
+        // 颜色映射
+        const colorMap = {
+            '红色': 'bg-red-500',
+            '蓝色': 'bg-blue-500',
+            '白色': 'bg-gray-100 border border-gray-300',
+            '黑色': 'bg-gray-900',
+            '银色': 'bg-gray-400'
+        };
+
+        // 当前选择的经销商等级
+        const dealerLevel = 'high'; // 高级批发商，可以根据登录信息动态设置
+
+        // 切换下拉菜单显示状态
+        function toggleDropdown(dropdownId) {
+            // 关闭其他下拉菜单
+            const allDropdowns = document.querySelectorAll('.dropdown-content');
+            allDropdowns.forEach(dropdown => {
+                if (dropdown.id !== dropdownId) {
+                    dropdown.classList.remove('show');
+                }
+            });
+            
+            // 切换当前下拉菜单
+            const dropdown = document.getElementById(dropdownId);
+            dropdown.classList.toggle('show');
+        }
+
+        // 选择车型系列
+        function selectSeries(series, event) {
+            event.stopPropagation();
+            document.getElementById('selectedSeries').textContent = series;
+            document.getElementById('seriesDropdown').classList.remove('show');
+            
+            // 更新车型选项
+            updateModelOptions(series);
+            
+            // 重置后续选择
+            document.getElementById('selectedModel').textContent = '请选择车型';
+            document.getElementById('selectedConfig').textContent = '请选择配置';
+            document.getElementById('selectedColor').textContent = '请选择颜色';
+            updateBasePrice(0);
+        }
+
+        // 更新车型选项
+        function updateModelOptions(series) {
+            const modelDropdown = document.getElementById('modelDropdown');
+            modelDropdown.innerHTML = '';
+            
+            if (vehicleData[series]) {
+                Object.keys(vehicleData[series].models).forEach(model => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item';
+                    item.textContent = model;
+                    item.onclick = (event) => selectModel(series, model, event);
+                    modelDropdown.appendChild(item);
+                });
+            }
+        }
+
+        // 选择车型
+        function selectModel(series, model, event) {
+            event.stopPropagation();
+            document.getElementById('selectedModel').textContent = model;
+            document.getElementById('modelDropdown').classList.remove('show');
+            
+            // 更新配置选项
+            updateConfigOptions(series, model);
+            
+            // 重置后续选择
+            document.getElementById('selectedConfig').textContent = '请选择配置';
+            document.getElementById('selectedColor').textContent = '请选择颜色';
+        }
+
+        // 更新配置选项
+        function updateConfigOptions(series, model) {
+            const configDropdown = document.getElementById('configDropdown');
+            configDropdown.innerHTML = '';
+            
+            if (vehicleData[series] && vehicleData[series].models[model]) {
+                const configs = vehicleData[series].models[model].configs;
+                configs.forEach(config => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item';
+                    item.textContent = config;
+                    item.onclick = (event) => selectConfig(series, model, config, event);
+                    configDropdown.appendChild(item);
+                });
+            }
+        }
+
+        // 选择配置
+        function selectConfig(series, model, config, event) {
+            event.stopPropagation();
+            document.getElementById('selectedConfig').textContent = config;
+            document.getElementById('configDropdown').classList.remove('show');
+            
+            // 更新颜色选项
+            updateColorOptions(series, model);
+            
+            // 重置颜色选择
+            document.getElementById('selectedColor').textContent = '请选择颜色';
+            
+            // 更新价格
+            const price = vehicleData[series].models[model].price[dealerLevel];
+            updateBasePrice(price);
+        }
+
+        // 更新颜色选项
+        function updateColorOptions(series, model) {
+            const colorDropdown = document.getElementById('colorDropdown');
+            colorDropdown.innerHTML = '';
+            
+            if (vehicleData[series] && vehicleData[series].models[model]) {
+                const colors = vehicleData[series].models[model].colors;
+                colors.forEach(color => {
+                    const item = document.createElement('div');
+                    item.className = 'dropdown-item flex items-center';
+                    item.innerHTML = `
+                        <div class="w-4 h-4 rounded-full mr-2 ${colorMap[color]}"></div>
+                        <span>${color}</span>
+                    `;
+                    item.onclick = (event) => selectColor(color, event);
+                    colorDropdown.appendChild(item);
+                });
+            }
+        }
+
+        // 选择颜色
+        function selectColor(color, event) {
+            event.stopPropagation();
+            document.getElementById('selectedColor').textContent = color;
+            document.getElementById('colorDropdown').classList.remove('show');
+            
+            // 更新颜色图标
+            const colorIcon = document.getElementById('selectedColorIcon');
+            colorIcon.className = `w-6 h-6 rounded-full mr-2 ${colorMap[color]}`;
+        }
+
+        // 更新基础价格
+        function updateBasePrice(price) {
+            const basePriceElement = document.getElementById('basePrice');
+            if (price > 0) {
+                basePriceElement.textContent = `¥${price.toLocaleString()}`;
+            } else {
+                basePriceElement.textContent = '¥0';
+            }
+            
+            // 重新计算总价
+            calculateTotal();
+        }
+
+        // 计算总价
+        function calculateTotal() {
+            calculateTotalPrice();
+        }
+
+        // 计算配置小计
+        function calculateConfigTotal() {
+            let total = 0;
+            const selectedItems = document.querySelectorAll('.config-item.selected');
+            
+            selectedItems.forEach(item => {
+                const onclick = item.getAttribute('onclick');
+                const priceMatch = onclick.match(/toggleConfig\(this,\s*(-?\d+)\)/);
+                if (priceMatch) {
+                    total += parseInt(priceMatch[1]);
+                }
+            });
+            
+            const configTotalElement = document.getElementById('configTotal');
+            configTotalElement.textContent = `¥${total.toLocaleString()}`;
+            
+            // 重新计算总价
+            calculateTotalPrice();
+        }
+
+        // 计算总价
+        function calculateTotalPrice() {
+            // 获取基础价格
+            const basePriceText = document.getElementById('basePrice').textContent;
+            const basePrice = parseInt(basePriceText.replace(/[¥,]/g, '')) || 0;
+            
+            // 获取配置价格
+            const configTotalText = document.getElementById('configTotal').textContent;
+            const configTotal = parseInt(configTotalText.replace(/[¥,]/g, '')) || 0;
+            
+            // 获取其他费用（保险+装车费、运费、加价等）
+            const otherFees = 80 + 1150 + 400; // 根据高级批发商费用
+            
+            // 获取提车费用
+            let pickupFee = 0;
+            const selectedPickup = document.querySelector('.form-section:last-of-type .config-item.selected');
+            if (selectedPickup) {
+                const onclick = selectedPickup.getAttribute('onclick');
+                const priceMatch = onclick.match(/selectPickupMethod\(this,\s*(-?\d+)\)/);
+                if (priceMatch) {
+                    pickupFee = parseInt(priceMatch[1]);
+                }
+            }
+            
+            // 计算总价
+            const totalPrice = basePrice + configTotal + otherFees + pickupFee;
+            
+            // 更新订单总额显示
+            const totalElement = document.querySelector('.total-price span:last-child');
+            if (totalElement) {
+                totalElement.textContent = `¥${totalPrice.toLocaleString()}`;
+            }
+            
+            // 更新价格明细
+            const detailElement = document.querySelector('.total-price .text-sm');
+            if (detailElement) {
+                let detailText = `基础价格 ¥${basePrice.toLocaleString()} + 配置 ¥${configTotal.toLocaleString()} + 费用 ¥${otherFees.toLocaleString()}`;
+                if (pickupFee > 0) {
+                    detailText += ` + 提车 ¥${pickupFee.toLocaleString()}`;
+                }
+                detailElement.textContent = detailText;
+            }
+        }
+
+        // 点击页面其他地方关闭下拉菜单
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown')) {
+                const allDropdowns = document.querySelectorAll('.dropdown-content');
+                allDropdowns.forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            }
+        });
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化车型选项
+            updateModelOptions('鸿日S1');
+            
+            // 初始化配置小计
+            calculateConfigTotal();
+            
+            // 初始化总价
+            calculateTotalPrice();
+            
+            // 初始化Tab导航
+            initializeTabNavigation();
+        });
+
+        // 初始化Tab导航
+        function initializeTabNavigation() {
+            const tabs = document.querySelectorAll('.tab-item');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabText = this.textContent.trim();
+                    if (tabText === '订单') {
+                        window.location.href = 'orders.html';
+                    }
+                });
+            });
+        }
+
+        // 显示操作提示
+        function showOrderTips() {
+            document.getElementById('orderTips').style.display = 'block';
+            setTimeout(() => {
+                hideTips();
+            }, 5000); // 5秒后自动隐藏
+        }
+
+        function hideTips() {
+            document.getElementById('orderTips').style.display = 'none';
+        }
+
+        // 保存草稿
+        function saveDraft() {
+            console.log('保存草稿');
+            
+            // 获取当前配置
+            const config = getCurrentOrderConfig();
+            
+            if (!validateOrderConfig(config)) {
+                return;
+            }
+            
+            // 生成订单号
+            const orderNo = generateOrderNumber();
+            
+            // 创建订单对象
+            const order = {
+                orderNo: orderNo,
+                status: 'pending',
+                dealer: 'jxs-qx (高级批发商)',
+                vehicleSeries: config.series,
+                vehicleModel: config.model,
+                vehicleConfig: config.config,
+                vehicleColor: config.color,
+                basePrice: config.basePrice,
+                additionalConfigs: config.additionalConfigs,
+                configTotal: config.configTotal,
+                otherFees: config.otherFees,
+                pickupMethod: config.pickupMethod,
+                pickupFee: config.pickupFee,
+                totalAmount: config.totalAmount,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+            
+            // 保存到localStorage
+            saveOrderToStorage(order);
+            
+            // 显示成功消息
+            alert('配置已保存为草稿订单！\n\n您可以在订单列表中：\n• 继续编辑此订单\n• 与其他草稿订单一起批量提交\n• 单独提交此订单');
+            
+            // 跳转到订单列表页面
+            window.location.href = 'orders.html';
+        }
+
+        // 提交订单
+        function submitOrder() {
+            console.log('提交订单');
+            
+            // 获取当前配置
+            const config = getCurrentOrderConfig();
+            
+            if (!validateOrderConfig(config)) {
+                return;
+            }
+            
+            // 显示确认对话框
+            const confirmMessage = `确认提交订单？\n\n车型：${config.series} ${config.model}\n配置：${config.config}\n颜色：${config.color}\n总价：¥${config.totalAmount.toLocaleString()}\n\n提交后将等待厂家确认调车。`;
+            
+            if (confirm(confirmMessage)) {
+                // 生成订单号
+                const orderNo = generateOrderNumber();
+                
+                // 创建订单对象
+                const order = {
+                    orderNo: orderNo,
+                    status: 'submitted',
+                    dealer: 'jxs-qx (高级批发商)',
+                    vehicleSeries: config.series,
+                    vehicleModel: config.model,
+                    vehicleConfig: config.config,
+                    vehicleColor: config.color,
+                    basePrice: config.basePrice,
+                    additionalConfigs: config.additionalConfigs,
+                    configTotal: config.configTotal,
+                    otherFees: config.otherFees,
+                    pickupMethod: config.pickupMethod,
+                    pickupFee: config.pickupFee,
+                    totalAmount: config.totalAmount,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    submittedAt: new Date().toISOString()
+                };
+                
+                // 保存到localStorage
+                saveOrderToStorage(order);
+                
+                alert('订单已提交成功！\n订单号：' + orderNo);
+                
+                // 跳转到订单列表页面
+                window.location.href = 'orders.html';
+            }
+        }
+
+        // 获取当前订单配置
+        function getCurrentOrderConfig() {
+            // 获取基础车辆信息
+            const series = document.getElementById('selectedSeries').textContent;
+            const model = document.getElementById('selectedModel').textContent;
+            const config = document.getElementById('selectedConfig').textContent;
+            const color = document.getElementById('selectedColor').textContent;
+            
+            // 获取基础价格
+            const basePriceText = document.getElementById('basePrice').textContent;
+            const basePrice = parseInt(basePriceText.replace(/[¥,]/g, '')) || 0;
+            
+            // 获取选中的配置项
+            const selectedConfigs = [];
+            const selectedConfigItems = document.querySelectorAll('.config-item.selected');
+            selectedConfigItems.forEach(item => {
+                const configName = item.querySelector('.font-medium').textContent;
+                const onclick = item.getAttribute('onclick');
+                const priceMatch = onclick.match(/toggleConfig\(this,\s*(-?\d+)\)/);
+                const price = priceMatch ? parseInt(priceMatch[1]) : 0;
+                
+                selectedConfigs.push({
+                    name: configName,
+                    price: price
+                });
+            });
+            
+            // 获取配置总价
+            const configTotalText = document.getElementById('configTotal').textContent;
+            const configTotal = parseInt(configTotalText.replace(/[¥,]/g, '')) || 0;
+            
+            // 获取提车方式
+            const selectedPickup = document.querySelector('.form-section:last-of-type .config-item.selected');
+            let pickupMethod = '物流发运';
+            let pickupFee = 0;
+            
+            if (selectedPickup) {
+                pickupMethod = selectedPickup.querySelector('.font-medium').textContent;
+                const onclick = selectedPickup.getAttribute('onclick');
+                const priceMatch = onclick.match(/selectPickupMethod\(this,\s*(-?\d+)\)/);
+                pickupFee = priceMatch ? parseInt(priceMatch[1]) : 0;
+            }
+            
+            // 计算其他费用
+            const otherFees = 80 + 1150 + 400; // 保险+装车费 + 运费 + 加价
+            
+            // 计算总价
+            const totalAmount = basePrice + configTotal + otherFees + pickupFee;
+            
+            return {
+                series: series,
+                model: model,
+                config: config,
+                color: color,
+                basePrice: basePrice,
+                additionalConfigs: selectedConfigs,
+                configTotal: configTotal,
+                otherFees: otherFees,
+                pickupMethod: pickupMethod,
+                pickupFee: pickupFee,
+                totalAmount: totalAmount
+            };
+        }
+        
+        // 验证订单配置完整性
+        function validateOrderConfig(config) {
+            if (!config.series || config.series === '请选择车型系列') {
+                alert('请选择车型系列');
+                return false;
+            }
+            if (!config.model || config.model === '请选择车型') {
+                alert('请选择具体车型');
+                return false;
+            }
+            if (!config.config || config.config === '请选择配置') {
+                alert('请选择车型配置');
+                return false;
+            }
+            if (!config.color || config.color === '请选择颜色') {
+                alert('请选择车身颜色');
+                return false;
+            }
+            if (config.basePrice === 0) {
+                alert('基础价格不能为0，请重新选择车型');
+                return false;
+            }
+            return true;
+        }
+
+        // 生成订单号
+        function generateOrderNumber() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+            const second = String(now.getSeconds()).padStart(2, '0');
+            
+            return `HR${year}${month}${day}${hour}${minute}${second}`;
+        }
+
+        // 保存订单到localStorage
+        function saveOrderToStorage(order) {
+            try {
+                // 获取现有订单
+                let orders = JSON.parse(localStorage.getItem('dealerOrders') || '[]');
+                
+                // 添加新订单
+                orders.push(order);
+                
+                // 保存回localStorage
+                localStorage.setItem('dealerOrders', JSON.stringify(orders));
+                
+                console.log('订单已保存到localStorage:', order);
+            } catch (error) {
+                console.error('保存订单失败:', error);
+                alert('保存订单失败，请重试');
+            }
+        }
+
+        // 新增配置切换功能
+        function toggleConfig(item, price) {
+            const icon = item.querySelector('i');
+            const priceSpan = item.querySelector('span:last-child');
+            
+            if (item.classList.contains('selected')) {
+                // 取消选择
+                item.classList.remove('selected');
+                icon.className = 'far fa-circle text-gray-400 mr-3';
+                priceSpan.className = 'text-gray-500';
+                priceSpan.textContent = price < 0 ? `-¥${Math.abs(price).toLocaleString()}` : `¥${price.toLocaleString()}`;
+            } else {
+                // 选择配置
+                item.classList.add('selected');
+                icon.className = 'fas fa-check-circle text-blue-500 mr-3';
+                if (price < 0) {
+                    priceSpan.className = 'text-green-600 font-medium';
+                    priceSpan.textContent = `-¥${Math.abs(price).toLocaleString()}`;
+                } else {
+                    priceSpan.className = 'price-tag px-2 py-1 text-sm';
+                    priceSpan.textContent = `¥${price.toLocaleString()}`;
+                }
+            }
+            
+            // 重新计算配置小计
+            calculateConfigTotal();
+        }
+
+        // 新增提车方式选择功能（单选）
+        function selectPickupMethod(item, price) {
+            // 移除所有提车方式的选中状态
+            const allPickupItems = item.parentElement.querySelectorAll('.config-item');
+            allPickupItems.forEach(pickupItem => {
+                pickupItem.classList.remove('selected');
+                const icon = pickupItem.querySelector('i');
+                const priceSpan = pickupItem.querySelector('span:last-child');
+                icon.className = 'far fa-circle text-gray-400 mr-3';
+                
+                // 根据原始价格设置样式
+                const onclick = pickupItem.getAttribute('onclick');
+                const priceMatch = onclick.match(/selectPickupMethod\(this,\s*(-?\d+)\)/);
+                const originalPrice = priceMatch ? parseInt(priceMatch[1]) : 0;
+                
+                if (originalPrice === 0) {
+                    priceSpan.className = 'text-green-600 font-medium';
+                    priceSpan.textContent = '免费';
+                } else {
+                    priceSpan.className = 'text-gray-500';
+                    priceSpan.textContent = `¥${originalPrice.toLocaleString()}`;
+                }
+            });
+            
+            // 选择当前项
+            item.classList.add('selected');
+            const icon = item.querySelector('i');
+            const priceSpan = item.querySelector('span:last-child');
+            icon.className = 'fas fa-check-circle text-blue-500 mr-3';
+            
+            if (price === 0) {
+                priceSpan.className = 'text-green-600 font-medium';
+                priceSpan.textContent = '免费';
+            } else {
+                priceSpan.className = 'price-tag px-2 py-1 text-sm';
+                priceSpan.textContent = `¥${price.toLocaleString()}`;
+            }
+            
+            // 重新计算总价
+            calculateTotalPrice();
+        }
+    </script>
+</body>
+</html> 

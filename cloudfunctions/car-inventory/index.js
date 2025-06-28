@@ -31,6 +31,10 @@ exports.main = async (event, context) => {
       case 'queryByVinHR':
         return await queryByVinHR(data);
       
+      // 车辆价格查询操作
+      case 'queryVehiclePrices':
+        return await queryVehiclePrices(data);
+      
       default:
         throw new Error('未知的操作类型');
     }
@@ -795,6 +799,138 @@ const queryByVinHR = async (data) => {
       code: -1,
       message: `鸿日车查询失败: ${error.message}`,
       data: null
+    };
+  }
+};
+
+// ==================== 车辆价格查询相关函数 ====================
+
+/**
+ * 查询经销商价格数据 - 连接dealer_price表
+ */
+const queryVehiclePrices = async (data) => {
+  try {
+    const { model_series, model_type, configuration } = data;
+    
+    console.log('经销商价格查询参数:', data);
+    
+    // 使用腾讯云开发SDK
+    const tcb = require('@cloudbase/node-sdk');
+    const app = tcb.init({
+      env: "cloud1-2gv7aqlv39d20b5c"
+    });
+    
+    // 初始化微达SDK
+    const cloud = init(app);
+    
+    // 构建查询条件
+    const where = {};
+    if (model_series) {
+      where.model_series = model_series;
+    }
+    if (model_type) {
+      where.model_type = model_type;
+    }
+    if (configuration) {
+      where.configuration = configuration;
+    }
+    
+    console.log('查询条件:', where);
+    
+    // 分页查询所有价格数据
+    let allRecords = [];
+    let currentPage = 1;
+    const pageSize = 200;
+    let hasMore = true;
+    
+    while (hasMore) {
+      console.log(`正在查询经销商价格第${currentPage}页，每页${pageSize}条`);
+      
+      // 查询dealer_price表
+      const result = await cloud.models.dealer_price.list({
+        filter: {
+          where: where
+        },
+        select: {
+          $master: true
+        },
+        pageSize: pageSize,
+        pageNumber: currentPage,
+        envType: "prod" // 使用正式环境
+      });
+      
+      console.log(`经销商价格第${currentPage}页查询结果:`, result);
+      
+      // 处理返回数据，适配不同的返回格式
+      let records = [];
+      if (result && result.data) {
+        if (Array.isArray(result.data)) {
+          records = result.data;
+        } else if (result.data.records && Array.isArray(result.data.records)) {
+          records = result.data.records;
+        } else if (result.data.list && Array.isArray(result.data.list)) {
+          records = result.data.list;
+        } else {
+          console.warn(`经销商价格第${currentPage}页未知的数据格式:`, result.data);
+          records = [];
+        }
+      }
+      
+      console.log(`经销商价格第${currentPage}页处理后的records:`, records.length, '条');
+      
+      // 将当前页数据添加到总结果中
+      allRecords = allRecords.concat(records);
+      
+      // 判断是否还有更多数据
+      if (records.length < pageSize) {
+        hasMore = false;
+      } else {
+        currentPage++;
+      }
+      
+      // 防止无限循环
+      if (currentPage > 20) {
+        console.warn('已达到最大查询页数限制，停止查询');
+        hasMore = false;
+      }
+    }
+    
+    console.log('经销商价格所有数据查询完成，总共:', allRecords.length, '条');
+    
+    // 转换数据格式，使用正确的字段名称
+    const formattedRecords = allRecords.map(item => ({
+      id: item.id || '',
+      model_series: item.model_series || '',
+      model_type: item.model_type || '',
+      configuration: item.configuration || '',
+      color: item.color || '',
+      Senior_Dealer_price: item.Senior_Dealer_price || 0,
+      Junior_Dealer_price: item.Junior_Dealer_price || 0,
+      current_Senior_Dealer_price: item.current_Senior_Dealer_price || 0,
+      current_Junior_Dealer_price: item.current_Junior_Dealer_price || 0,
+      Policy_Preference: item.Policy_Preference || 0,
+      is_active: item.is_active !== undefined ? item.is_active : true,
+      // 兼容字段
+      county_dealer_price: item.Senior_Dealer_price || 0,
+      township_dealer_price: item.Junior_Dealer_price || 0,
+      policy_discount: item.Policy_Preference || 0,
+      created_at: item.created_at || '',
+      updated_at: item.updated_at || ''
+    }));
+    
+    return {
+      code: 0,
+      message: '经销商价格查询成功',
+      data: formattedRecords,
+      total: formattedRecords.length
+    };
+    
+  } catch (error) {
+    console.error('查询经销商价格错误:', error);
+    return {
+      code: -1,
+      message: `经销商价格查询失败: ${error.message}`,
+      data: []
     };
   }
 };

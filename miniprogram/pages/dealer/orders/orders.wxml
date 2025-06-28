@@ -1,0 +1,148 @@
+<!-- Tab导航 -->
+<view class="tab-nav">
+  <view class="tab-item" bindtap="switchToOrder">下单</view>
+  <view class="tab-item active">订单</view>
+</view>
+
+<!-- 状态筛选 -->
+<view class="filter-section">
+  <scroll-view scroll-x class="filter-scroll">
+    <view class="filter-chips">
+      <view 
+        class="filter-chip {{currentFilter === 'all' ? 'active' : ''}}"
+        bindtap="switchFilter"
+        data-filter="all"
+      >
+        全部
+      </view>
+      <view 
+        class="filter-chip {{currentFilter === 'pending' ? 'active' : ''}}"
+        bindtap="switchFilter"
+        data-filter="pending"
+      >
+        待提交
+      </view>
+      <view 
+        class="filter-chip {{currentFilter === 'submitted' ? 'active' : ''}}"
+        bindtap="switchFilter"
+        data-filter="submitted"
+      >
+        已提交
+      </view>
+      <view 
+        class="filter-chip {{currentFilter === 'confirmed' ? 'active' : ''}}"
+        bindtap="switchFilter"
+        data-filter="confirmed"
+      >
+        已调车
+      </view>
+      <view 
+        class="filter-chip {{currentFilter === 'shipped' ? 'active' : ''}}"
+        bindtap="switchFilter"
+        data-filter="shipped"
+      >
+        已发货
+      </view>
+      <view 
+        class="filter-chip {{currentFilter === 'completed' ? 'active' : ''}}"
+        bindtap="switchFilter"
+        data-filter="completed"
+      >
+        已完成
+      </view>
+    </view>
+  </scroll-view>
+</view>
+
+<!-- 批量操作栏 -->
+<view class="batch-operations {{showBatchOperations ? 'show' : ''}}" wx:if="{{showBatchOperations}}">
+  <view class="batch-content">
+    <view class="batch-left">
+      <checkbox 
+        checked="{{selectAll}}" 
+        bindchange="onSelectAllChange"
+        class="select-all-checkbox"
+      />
+      <text class="select-all-text">全选</text>
+      <text class="selected-count">已选择 {{selectedCount}} 项</text>
+    </view>
+    <view class="batch-buttons">
+      <button class="batch-btn batch-delete" bindtap="batchDelete" size="mini">批量删除</button>
+      <button class="batch-btn batch-submit" bindtap="batchSubmit" size="mini">批量提交</button>
+    </view>
+  </view>
+</view>
+
+<!-- 订单列表 -->
+<scroll-view scroll-y class="orders-list" refresher-enabled="{{true}}" refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+  <view class="order-card" wx:for="{{filteredOrders}}" wx:key="orderNo" bindtap="viewOrderDetail" data-order-no="{{item.orderNo}}">
+    <!-- 订单头部 -->
+    <view class="order-header">
+      <view class="order-left">
+        <checkbox 
+          wx:if="{{item.status === 'pending'}}"
+          checked="{{item.selected}}" 
+          bindchange="onOrderSelect"
+          data-order-no="{{item.orderNo}}"
+          catchtap="stopPropagation"
+          class="order-checkbox"
+        />
+        <view class="order-info">
+          <text class="order-no">订单号: {{item.orderNo}}</text>
+        </view>
+      </view>
+      <view class="status-badge status-{{item.status}}">{{getStatusText(item.status)}}</view>
+    </view>
+
+    <!-- 车辆信息 -->
+    <view class="vehicle-info">
+      <view class="vehicle-details">
+        <text class="vehicle-name">{{item.vehicleSeries}}-{{item.vehicleModel}}</text>
+        <text class="vehicle-config">{{item.vehicleConfig}} · {{item.vehicleColor}}</text>
+        <text class="dealer-info">经销商: {{item.dealer}}</text>
+      </view>
+    </view>
+
+    <!-- 价格和操作 -->
+    <view class="order-footer">
+      <view class="price-info">
+        <text class="total-price">¥{{item.totalAmount}}</text>
+        <text class="create-time">{{formatTime(item.createdAt)}}</text>
+      </view>
+      <view class="order-actions" wx:if="{{item.status === 'pending'}}" catchtap="stopPropagation">
+        <button class="action-btn edit-btn" bindtap="editOrder" data-order-no="{{item.orderNo}}" size="mini">编辑</button>
+        <button class="action-btn submit-btn" bindtap="submitSingleOrder" data-order-no="{{item.orderNo}}" size="mini">单独提交</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{filteredOrders.length === 0 && !loading}}">
+    <view class="empty-icon">📋</view>
+    <text class="empty-title">暂无订单</text>
+    <text class="empty-desc">您还没有创建任何订单</text>
+    <button class="empty-btn" bindtap="switchToOrder">立即下单</button>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-state" wx:if="{{loading}}">
+    <view class="loading-icon">⏳</view>
+    <text class="loading-text">加载中...</text>
+  </view>
+</scroll-view>
+
+<!-- 确认对话框 -->
+<view class="modal {{showModal ? 'show' : ''}}" wx:if="{{showModal}}">
+  <view class="modal-content">
+    <view class="modal-header">
+      <text class="modal-title">{{modalTitle}}</text>
+    </view>
+    <view class="modal-body">
+      <text class="modal-message">{{modalMessage}}</text>
+    </view>
+    <view class="modal-footer">
+      <button class="modal-btn cancel-btn" bindtap="hideModal">取消</button>
+      <button class="modal-btn confirm-btn" bindtap="confirmAction">确认</button>
+    </view>
+  </view>
+</view> 
