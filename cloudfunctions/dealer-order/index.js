@@ -360,62 +360,171 @@ const getConfigsList = async (models, data) => {
   try {
     const { series, model } = data;
 
-    if (!series || !model) {
-      throw new Error('缺少车型系列或车型参数');
+    // 增强输入参数验证
+    if (!series || !model || series.trim() === '' || model.trim() === '') {
+      throw new Error('缺少车型系列或车型参数，或参数为空');
     }
 
-    console.log('开始获取配置列表，系列:', series, '车型:', model);
-    // 查询指定系列和车型的配置数据
-    const result = await models.inventory_model.list({
-      filter: {
-        where: {
-          model_series: series,
-          model_type: model
+    const trimmedSeries = series.trim();
+    const trimmedModel = model.trim();
+
+    console.log('=== getConfigsList 调试开始 ===');
+    console.log('原始series参数:', series);
+    console.log('原始model参数:', model);
+    console.log('series类型:', typeof series);
+    console.log('model类型:', typeof model);
+    console.log('trimmed参数:', { trimmedSeries, trimmedModel });
+
+    // 优先方案：使用trim后的参数查询
+    console.log('\n=== 方案1：使用trim参数查询 ===');
+    console.log('查询条件:', { model_series: trimmedSeries, model_type: trimmedModel });
+    
+    try {
+      const result = await models.inventory_model.list({
+        filter: {
+          where: {
+            model_series: trimmedSeries,
+            model_type: trimmedModel
+          }
+        },
+        select: {
+          configuration: true,
+          model_series: true,
+          model_type: true
+        },
+        pageSize: 200,
+        pageNumber: 1,
+        getCount: false,
+        envType: "prod"
+      });
+      
+      console.log('trim参数查询成功，结果:', result);
+      return await processConfigResult(result, 'trim参数', trimmedSeries, trimmedModel);
+      
+    } catch (error1) {
+      console.log('trim参数查询失败:', error1.message);
+      
+      // 备用方案1：尝试原始参数
+      console.log('\n=== 方案2：使用原始参数查询 ===');
+      try {
+        const result2 = await models.inventory_model.list({
+          filter: {
+            where: {
+              model_series: series,
+              model_type: model
+            }
+          },
+          select: {
+            configuration: true,
+            model_series: true,
+            model_type: true
+          },
+          pageSize: 200,
+          pageNumber: 1,
+          getCount: false,
+          envType: "prod"
+        });
+        
+        console.log('原始参数查询成功:', result2);
+        return await processConfigResult(result2, '原始参数', trimmedSeries, trimmedModel);
+        
+      } catch (error2) {
+        console.log('原始参数查询也失败:', error2.message);
+        
+        // 备用方案2：只用系列参数查询
+        console.log('\n=== 方案3：只使用系列参数查询 ===');
+        try {
+          const result3 = await models.inventory_model.list({
+            filter: {
+              where: {
+                model_series: trimmedSeries
+              }
+            },
+            select: {
+              configuration: true,
+              model_series: true,
+              model_type: true
+            },
+            pageSize: 200,
+            pageNumber: 1,
+            getCount: false,
+            envType: "prod"
+          });
+          
+          console.log('系列参数查询成功，开始过滤车型');
+          return await filterConfigResult(result3, trimmedSeries, trimmedModel, '系列查询+过滤');
+          
+        } catch (error3) {
+          console.log('系列参数查询也失败:', error3.message);
+          
+          // 最后方案：无条件查询然后过滤（支持分页）
+          console.log('\n=== 方案4：无条件查询后过滤（分页处理） ===');
+          try {
+            // 分页获取所有数据
+            let allRecords = [];
+            let pageNumber = 1;
+            let hasMoreData = true;
+            
+            while (hasMoreData && pageNumber <= 5) { // 最多查询5页，避免无限循环
+              console.log(`正在查询第${pageNumber}页配置数据...`);
+              
+              const result4 = await models.inventory_model.list({
+                filter: {
+                  where: {}
+                },
+                select: {
+                  configuration: true,
+                  model_series: true,
+                  model_type: true
+                },
+                pageSize: 200,
+                pageNumber: pageNumber,
+                getCount: false,
+                envType: "prod"
+              });
+              
+              // 处理返回数据
+              let records = [];
+              if (result4 && result4.data) {
+                if (Array.isArray(result4.data)) {
+                  records = result4.data;
+                } else if (result4.data.records && Array.isArray(result4.data.records)) {
+                  records = result4.data.records;
+                } else if (result4.data.list && Array.isArray(result4.data.list)) {
+                  records = result4.data.list;
+                }
+              }
+              
+              console.log(`第${pageNumber}页获取到${records.length}条配置记录`);
+              
+              if (records.length > 0) {
+                allRecords = allRecords.concat(records);
+                pageNumber++;
+                
+                // 如果返回的记录数少于pageSize，说明已经是最后一页
+                if (records.length < 200) {
+                  hasMoreData = false;
+                }
+              } else {
+                hasMoreData = false;
+              }
+            }
+            
+            console.log(`配置分页查询完成，总共获取${allRecords.length}条记录`);
+            
+            // 构造模拟的result对象
+            const mockResult = {
+              data: allRecords
+            };
+            
+            return await filterConfigResult(mockResult, trimmedSeries, trimmedModel, '分页查询+过滤');
+            
+          } catch (error4) {
+            throw new Error(`所有查询方案都失败: ${error4.message}`);
+          }
         }
-      },
-      select: {
-        configuration: true
-      },
-      pageSize: 200, // 增加查询量
-      pageNumber: 1,
-      getCount: false,
-      envType: "prod"
-    });
-
-    console.log('配置查询结果:', result);
-
-    // 处理返回数据
-    let records = [];
-    if (result && result.data) {
-      if (Array.isArray(result.data)) {
-        records = result.data;
-      } else if (result.data.records && Array.isArray(result.data.records)) {
-        records = result.data.records;
-      } else if (result.data.list && Array.isArray(result.data.list)) {
-        records = result.data.list;
       }
     }
-
-    // 提取唯一的配置
-    const configsSet = new Set();
-    records.forEach(item => {
-      if (item.configuration) {
-        configsSet.add(item.configuration);
-      }
-    });
-
-    const configsList = Array.from(configsSet).map(config => ({
-      value: config,
-      label: config
-    }));
-
-    console.log('提取到的配置列表:', configsList);
-
-    return {
-      code: 0,
-      message: '获取配置列表成功',
-      data: configsList
-    };
 
   } catch (error) {
     console.error('获取配置列表错误:', error);
@@ -427,6 +536,143 @@ const getConfigsList = async (models, data) => {
   }
 };
 
+// 辅助函数：处理查询结果（直接匹配）
+const processConfigResult = async (result, method, targetSeries, targetModel) => {
+  console.log(`${method}查询结果类型:`, typeof result);
+
+  // 处理返回数据
+  let records = [];
+  if (result && result.data) {
+    if (Array.isArray(result.data)) {
+      records = result.data;
+    } else if (result.data.records && Array.isArray(result.data.records)) {
+      records = result.data.records;
+    } else if (result.data.list && Array.isArray(result.data.list)) {
+      records = result.data.list;
+    }
+  }
+
+  console.log(`${method}提取到的记录数量:`, records.length);
+
+  // 增强数据验证和过滤
+  const validRecords = records.filter(item => {
+    return item && 
+           item.configuration && 
+           typeof item.configuration === 'string' &&
+           item.configuration.trim() !== '' &&
+           item.model_series && 
+           item.model_type &&
+           item.model_series.trim() === targetSeries &&
+           item.model_type.trim() === targetModel;
+  });
+
+  console.log(`${method}有效记录数量:`, validRecords.length);
+
+  // 提取唯一的配置
+  const configsSet = new Set();
+  validRecords.forEach(item => {
+    const config = item.configuration.trim();
+    if (config) {
+      configsSet.add(config);
+    }
+  });
+
+  console.log(`${method}唯一配置数量:`, configsSet.size);
+
+  // 转换为标准格式
+  const configsList = Array.from(configsSet)
+    .map(config => ({
+      value: config,
+      label: config
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  console.log(`${method}最终配置列表:`, configsList);
+
+  // 最终验证：确保至少有一个有效配置
+  if (configsList.length === 0) {
+    return {
+      code: -1,
+      message: `${method}: 未找到系列"${targetSeries}"车型"${targetModel}"的有效配置`,
+      data: []
+    };
+  }
+
+  return {
+    code: 0,
+    message: `获取配置列表成功 (${method})`,
+    data: configsList
+  };
+};
+
+// 辅助函数：过滤结果（需要手动过滤）
+const filterConfigResult = async (result, targetSeries, targetModel, method) => {
+  let records = [];
+  if (result && result.data) {
+    if (Array.isArray(result.data)) {
+      records = result.data;
+    } else if (result.data.records && Array.isArray(result.data.records)) {
+      records = result.data.records;
+    } else if (result.data.list && Array.isArray(result.data.list)) {
+      records = result.data.list;
+    }
+  }
+
+  console.log(`${method}过滤前总记录数:`, records.length);
+  
+  // 过滤匹配的系列和车型
+  const filteredRecords = records.filter(item => 
+    item && 
+    item.model_series && 
+    item.model_type && 
+    item.configuration &&
+    item.model_series.trim() === targetSeries && 
+    item.model_type.trim() === targetModel &&
+    item.configuration.trim() !== ''
+  );
+  
+  console.log(`${method}过滤后记录数:`, filteredRecords.length);
+  console.log('目标系列:', targetSeries);
+  console.log('目标车型:', targetModel);
+  console.log('找到的匹配记录样本:', filteredRecords.slice(0, 3).map(item => ({
+    series: item.model_series,
+    model: item.model_type,
+    config: item.configuration
+  })));
+
+  // 提取唯一的配置
+  const configsSet = new Set();
+  filteredRecords.forEach((item) => {
+    const config = item.configuration.trim();
+    if (config) {
+      configsSet.add(config);
+    }
+  });
+
+  const configsList = Array.from(configsSet)
+    .map(config => ({
+      value: config,
+      label: config
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+
+  console.log(`${method}最终配置列表:`, configsList);
+
+  if (configsList.length === 0) {
+    return {
+      code: -1,
+      message: `${method}: 未找到系列"${targetSeries}"车型"${targetModel}"的有效配置`,
+      data: []
+    };
+  }
+
+  return {
+    code: 0,
+    message: `获取配置列表成功 (${method})`,
+    data: configsList
+  };
+};
+
 /**
  * 根据系列、车型、配置获取颜色列表
  */
@@ -434,77 +680,180 @@ const getColorsList = async (models, data) => {
   try {
     const { series, model, config } = data;
 
-    if (!series || !model || !config) {
-      throw new Error('缺少车型系列、车型或配置参数');
+    if (!series || !model || !config || 
+        series.trim() === '' || model.trim() === '' || config.trim() === '') {
+      throw new Error('缺少车型系列、车型或配置参数，或参数为空');
     }
 
-    console.log('开始获取颜色列表，系列:', series, '车型:', model, '配置:', config);
+    const trimmedSeries = series.trim();
+    const trimmedModel = model.trim();
+    const trimmedConfig = config.trim();
 
-    // 查询指定条件的颜色数据
-    const result = await models.inventory_model.list({
-      filter: {
-        where: {
-          model_series: series,
-          model_type: model,
-          configuration: config
+    console.log('=== getColorsList 调试开始 ===');
+    console.log('原始参数:', { series, model, config });
+    console.log('trimmed参数:', { trimmedSeries, trimmedModel, trimmedConfig });
+
+    // 优先方案：使用trim后的参数查询
+    console.log('\n=== 方案1：使用trim参数查询 ===');
+    console.log('查询条件:', { 
+      model_series: trimmedSeries, 
+      model_type: trimmedModel, 
+      configuration: trimmedConfig 
+    });
+    
+    try {
+      const result = await models.inventory_model.list({
+        filter: {
+          where: {
+            model_series: trimmedSeries,
+            model_type: trimmedModel,
+            configuration: trimmedConfig
+          }
+        },
+        select: {
+          color: true,
+          model_series: true,
+          model_type: true,
+          configuration: true
+        },
+        pageSize: 200,
+        pageNumber: 1,
+        getCount: false,
+        envType: "prod"
+      });
+      
+      console.log('trim参数查询成功，结果:', result);
+      return await processColorResult(result, 'trim参数', trimmedSeries, trimmedModel, trimmedConfig);
+      
+    } catch (error1) {
+      console.log('trim参数查询失败:', error1.message);
+      
+      // 备用方案1：尝试原始参数
+      console.log('\n=== 方案2：使用原始参数查询 ===');
+      try {
+        const result2 = await models.inventory_model.list({
+          filter: {
+            where: {
+              model_series: series,
+              model_type: model,
+              configuration: config
+            }
+          },
+          select: {
+            color: true,
+            model_series: true,
+            model_type: true,
+            configuration: true
+          },
+          pageSize: 200,
+          pageNumber: 1,
+          getCount: false,
+          envType: "prod"
+        });
+        
+        console.log('原始参数查询成功:', result2);
+        return await processColorResult(result2, '原始参数', trimmedSeries, trimmedModel, trimmedConfig);
+        
+      } catch (error2) {
+        console.log('原始参数查询也失败:', error2.message);
+        
+        // 备用方案2：只用系列和车型参数查询
+        console.log('\n=== 方案3：使用系列+车型参数查询 ===');
+        try {
+          const result3 = await models.inventory_model.list({
+            filter: {
+              where: {
+                model_series: trimmedSeries,
+                model_type: trimmedModel
+              }
+            },
+            select: {
+              color: true,
+              model_series: true,
+              model_type: true,
+              configuration: true
+            },
+            pageSize: 200,
+            pageNumber: 1,
+            getCount: false,
+            envType: "prod"
+          });
+          
+          console.log('系列+车型参数查询成功，开始过滤配置');
+          return await filterColorResult(result3, trimmedSeries, trimmedModel, trimmedConfig, '系列+车型查询+过滤');
+          
+        } catch (error3) {
+          console.log('系列+车型参数查询也失败:', error3.message);
+          
+          // 最后方案：无条件查询然后过滤（支持分页）
+          console.log('\n=== 方案4：无条件查询后过滤（分页处理） ===');
+          try {
+            // 分页获取所有数据
+            let allRecords = [];
+            let pageNumber = 1;
+            let hasMoreData = true;
+            
+            while (hasMoreData && pageNumber <= 5) { // 最多查询5页，避免无限循环
+              console.log(`正在查询第${pageNumber}页颜色数据...`);
+              
+              const result4 = await models.inventory_model.list({
+                filter: {
+                  where: {}
+                },
+                select: {
+                  color: true,
+                  model_series: true,
+                  model_type: true,
+                  configuration: true
+                },
+                pageSize: 200,
+                pageNumber: pageNumber,
+                getCount: false,
+                envType: "prod"
+              });
+              
+              // 处理返回数据
+              let records = [];
+              if (result4 && result4.data) {
+                if (Array.isArray(result4.data)) {
+                  records = result4.data;
+                } else if (result4.data.records && Array.isArray(result4.data.records)) {
+                  records = result4.data.records;
+                } else if (result4.data.list && Array.isArray(result4.data.list)) {
+                  records = result4.data.list;
+                }
+              }
+              
+              console.log(`第${pageNumber}页获取到${records.length}条颜色记录`);
+              
+              if (records.length > 0) {
+                allRecords = allRecords.concat(records);
+                pageNumber++;
+                
+                // 如果返回的记录数少于pageSize，说明已经是最后一页
+                if (records.length < 200) {
+                  hasMoreData = false;
+                }
+              } else {
+                hasMoreData = false;
+              }
+            }
+            
+            console.log(`颜色分页查询完成，总共获取${allRecords.length}条记录`);
+            
+            // 构造模拟的result对象
+            const mockResult = {
+              data: allRecords
+            };
+            
+            return await filterColorResult(mockResult, trimmedSeries, trimmedModel, trimmedConfig, '分页查询+过滤');
+            
+          } catch (error4) {
+            throw new Error(`所有查询方案都失败: ${error4.message}`);
+          }
         }
-      },
-      select: {
-        color: true
-      },
-      pageSize: 200, // 增加查询量
-      pageNumber: 1,
-      getCount: false,
-      envType: "prod"
-    });
-
-    console.log('颜色查询结果:', result);
-
-    // 处理返回数据
-    let records = [];
-    if (result && result.data) {
-      if (Array.isArray(result.data)) {
-        records = result.data;
-      } else if (result.data.records && Array.isArray(result.data.records)) {
-        records = result.data.records;
-      } else if (result.data.list && Array.isArray(result.data.list)) {
-        records = result.data.list;
       }
     }
-
-    // 提取唯一的颜色
-    const colorsSet = new Set();
-    records.forEach(item => {
-      if (item.color) {
-        colorsSet.add(item.color);
-      }
-    });
-
-    // 颜色映射
-    const colorMap = {
-      '红色': '#ff0000',
-      '蓝色': '#0066cc',
-      '白色': '#ffffff',
-      '黑色': '#000000',
-      '银色': '#c0c0c0',
-      '灰色': '#808080',
-      '绿色': '#008000',
-      '黄色': '#ffff00'
-    };
-
-    const colorsList = Array.from(colorsSet).map(color => ({
-      value: color,
-      label: color,
-      color: colorMap[color] || '#666666'
-    }));
-
-    console.log('提取到的颜色列表:', colorsList);
-
-    return {
-      code: 0,
-      message: '获取颜色列表成功',
-      data: colorsList
-    };
 
   } catch (error) {
     console.error('获取颜色列表错误:', error);
@@ -514,6 +863,167 @@ const getColorsList = async (models, data) => {
       data: []
     };
   }
+};
+
+// 辅助函数：处理颜色查询结果（直接匹配）
+const processColorResult = async (result, method, targetSeries, targetModel, targetConfig) => {
+  console.log(`${method}颜色查询结果类型:`, typeof result);
+
+  // 处理返回数据
+  let records = [];
+  if (result && result.data) {
+    if (Array.isArray(result.data)) {
+      records = result.data;
+    } else if (result.data.records && Array.isArray(result.data.records)) {
+      records = result.data.records;
+    } else if (result.data.list && Array.isArray(result.data.list)) {
+      records = result.data.list;
+    }
+  }
+
+  console.log(`${method}提取到的记录数量:`, records.length);
+
+  // 增强数据验证和过滤
+  const validRecords = records.filter(item => {
+    return item && 
+           item.color && 
+           typeof item.color === 'string' &&
+           item.color.trim() !== '' &&
+           item.model_series && 
+           item.model_type &&
+           item.configuration &&
+           item.model_series.trim() === targetSeries &&
+           item.model_type.trim() === targetModel &&
+           item.configuration.trim() === targetConfig;
+  });
+
+  console.log(`${method}有效记录数量:`, validRecords.length);
+
+  // 提取唯一的颜色
+  const colorsSet = new Set();
+  validRecords.forEach(item => {
+    const color = item.color.trim();
+    if (color) {
+      colorsSet.add(color);
+    }
+  });
+
+  console.log(`${method}唯一颜色数量:`, colorsSet.size);
+
+  // 颜色映射
+  const colorMap = {
+    '红色': '#ff0000',
+    '蓝色': '#0066cc',
+    '白色': '#ffffff',
+    '黑色': '#000000',
+    '银色': '#c0c0c0',
+    '灰色': '#808080',
+    '绿色': '#008000',
+    '黄色': '#ffff00'
+  };
+
+  const colorsList = Array.from(colorsSet).map(color => ({
+    value: color,
+    label: color,
+    color: colorMap[color] || '#666666'
+  })).sort((a, b) => a.label.localeCompare(b.label));
+
+  console.log(`${method}最终颜色列表:`, colorsList);
+
+  if (colorsList.length === 0) {
+    return {
+      code: -1,
+      message: `${method}: 未找到系列"${targetSeries}"车型"${targetModel}"配置"${targetConfig}"的有效颜色`,
+      data: []
+    };
+  }
+
+  return {
+    code: 0,
+    message: `获取颜色列表成功 (${method})`,
+    data: colorsList
+  };
+};
+
+// 辅助函数：过滤颜色结果（需要手动过滤）
+const filterColorResult = async (result, targetSeries, targetModel, targetConfig, method) => {
+  let records = [];
+  if (result && result.data) {
+    if (Array.isArray(result.data)) {
+      records = result.data;
+    } else if (result.data.records && Array.isArray(result.data.records)) {
+      records = result.data.records;
+    } else if (result.data.list && Array.isArray(result.data.list)) {
+      records = result.data.list;
+    }
+  }
+
+  console.log(`${method}过滤前总记录数:`, records.length);
+  
+  // 过滤匹配的系列、车型和配置
+  const filteredRecords = records.filter(item => 
+    item && 
+    item.model_series && 
+    item.model_type && 
+    item.configuration &&
+    item.color &&
+    item.model_series.trim() === targetSeries && 
+    item.model_type.trim() === targetModel &&
+    item.configuration.trim() === targetConfig &&
+    item.color.trim() !== ''
+  );
+  
+  console.log(`${method}过滤后记录数:`, filteredRecords.length);
+  console.log('目标参数:', { targetSeries, targetModel, targetConfig });
+  console.log('找到的匹配记录样本:', filteredRecords.slice(0, 3).map(item => ({
+    series: item.model_series,
+    model: item.model_type,
+    config: item.configuration,
+    color: item.color
+  })));
+
+  // 提取唯一的颜色
+  const colorsSet = new Set();
+  filteredRecords.forEach((item) => {
+    const color = item.color.trim();
+    if (color) {
+      colorsSet.add(color);
+    }
+  });
+
+  // 颜色映射
+  const colorMap = {
+    '红色': '#ff0000',
+    '蓝色': '#0066cc',
+    '白色': '#ffffff',
+    '黑色': '#000000',
+    '银色': '#c0c0c0',
+    '灰色': '#808080',
+    '绿色': '#008000',
+    '黄色': '#ffff00'
+  };
+
+  const colorsList = Array.from(colorsSet).map(color => ({
+    value: color,
+    label: color,
+    color: colorMap[color] || '#666666'
+  })).sort((a, b) => a.label.localeCompare(b.label));
+
+  console.log(`${method}最终颜色列表:`, colorsList);
+
+  if (colorsList.length === 0) {
+    return {
+      code: -1,
+      message: `${method}: 未找到系列"${targetSeries}"车型"${targetModel}"配置"${targetConfig}"的有效颜色`,
+      data: []
+    };
+  }
+
+  return {
+    code: 0,
+    message: `获取颜色列表成功 (${method})`,
+    data: colorsList
+  };
 };
 
 /**

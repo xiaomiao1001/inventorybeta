@@ -32,33 +32,6 @@
         <text class="icon">🚗</text>
         <text>配置车辆</text>
       </view>
-      <view class="data-status" wx:if="{{!isLoadingInventory}}">
-        <view class="status-info">
-          <text class="status-text">{{hongriInventoryData.length > 0 ? '实时库存数据' : '备用数据'}}</text>
-          <text class="status-count" wx:if="{{hongriInventoryData.length > 0}}">{{hongriInventoryData.length}}辆在库</text>
-          <text class="price-status">{{vehiclePricesData.length > 0 ? '实时价格' : '备用价格'}}</text>
-        </view>
-        <view class="action-buttons">
-          <view class="test-btn" bindtap="testDataConnection">
-            <text class="test-icon">🔍</text>
-          </view>
-          <view class="price-btn" bindtap="testDealerPriceConnection">
-            <text class="price-icon">💰</text>
-          </view>
-          <view class="new-test-btn" bindtap="testNewCloudFunction">
-            <text class="new-test-icon">🆕</text>
-          </view>
-          <view class="create-btn" bindtap="createTestData">
-            <text class="create-icon">➕</text>
-          </view>
-          <view class="check-btn" bindtap="checkCurrentDataStatus">
-            <text class="check-icon">📋</text>
-          </view>
-          <view class="refresh-btn" bindtap="refreshInventoryData">
-            <text class="refresh-icon">↻</text>
-          </view>
-        </view>
-      </view>
     </view>
     
     <view class="form-content">

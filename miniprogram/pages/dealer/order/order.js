@@ -288,14 +288,35 @@ Page({
   extractConfigsList(selectedSeries, selectedModel) {
     console.log('开始提取配置列表，系列:', selectedSeries, '车型:', selectedModel)
 
+    // 数据验证：检查输入参数
+    if (!selectedSeries || !selectedModel || selectedSeries.trim() === '' || selectedModel.trim() === '') {
+      console.log('输入参数无效:', { selectedSeries, selectedModel })
+      return []
+    }
+
+    // 数据验证：检查库存数据是否存在
+    if (!this.data.hongriInventoryData || this.data.hongriInventoryData.length === 0) {
+      console.log('库存数据为空或不存在')
+      return []
+    }
+
     const configsSet = new Set()
+    let matchedCount = 0
 
     this.data.hongriInventoryData.forEach((item, index) => {
-      if (item.model_series === selectedSeries &&
-        item.model_type === selectedModel &&
-        item.configuration) {
-        configsSet.add(item.configuration)
-        if (index < 3) {
+      // 增强数据验证：确保所有必要字段都存在且有效
+      if (item && 
+          item.model_series && 
+          item.model_type && 
+          item.configuration &&
+          item.model_series.trim() === selectedSeries.trim() &&
+          item.model_type.trim() === selectedModel.trim() &&
+          item.configuration.trim() !== '') {
+        
+        configsSet.add(item.configuration.trim())
+        matchedCount++
+        
+        if (index < 5) {
           console.log(`匹配的配置数据第${index + 1}条:`, {
             model_series: item.model_series,
             model_type: item.model_type,
@@ -305,10 +326,16 @@ Page({
       }
     })
 
-    const configsList = Array.from(configsSet).map(config => ({
-      value: config,
-      label: config
-    }))
+    console.log(`总共匹配到 ${matchedCount} 条记录，提取到 ${configsSet.size} 个唯一配置`)
+
+    // 转换为标准格式并进行最终验证
+    const configsList = Array.from(configsSet)
+      .filter(config => config && config.trim() !== '') // 再次过滤空值
+      .map(config => ({
+        value: config.trim(),
+        label: config.trim()
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label)) // 按字母顺序排序
 
     console.log('提取到的配置列表:', configsList)
 
@@ -556,7 +583,16 @@ Page({
         if (configsResult.result && configsResult.result.code === 0 && configsResult.result.data) {
           const configs = configsResult.result.data
 
-          if (configs.length === 0) {
+          // 增强数据验证：过滤空值和无效数据
+          const validConfigs = configs.filter(config => 
+            config && 
+            config.value && 
+            config.value.trim() !== '' && 
+            config.label && 
+            config.label.trim() !== ''
+          )
+
+          if (validConfigs.length === 0) {
             wx.showToast({
               title: '该车型暂无可选配置',
               icon: 'none'
@@ -564,10 +600,12 @@ Page({
             return
           }
 
+          console.log('有效配置数据:', validConfigs)
+
           this.setData({
             showPicker: true,
             pickerTitle: '选择配置',
-            pickerOptions: configs,
+            pickerOptions: validConfigs,
             currentPickerType: 'config',
             currentPickerValue: this.data.selectedConfig
           })
@@ -580,7 +618,16 @@ Page({
         // 使用本地库存数据提取配置列表
         const configs = this.extractConfigsList(this.data.selectedSeries, this.data.selectedModel)
 
-        if (configs.length === 0) {
+        // 增强数据验证：过滤空值和无效数据
+        const validConfigs = configs.filter(config => 
+          config && 
+          config.value && 
+          config.value.trim() !== '' && 
+          config.label && 
+          config.label.trim() !== ''
+        )
+
+        if (validConfigs.length === 0) {
           wx.showToast({
             title: '该车型暂无可选配置',
             icon: 'none'
@@ -588,10 +635,12 @@ Page({
           return
         }
 
+        console.log('本地提取的有效配置数据:', validConfigs)
+
         this.setData({
           showPicker: true,
           pickerTitle: '选择配置',
-          pickerOptions: configs,
+          pickerOptions: validConfigs,
           currentPickerType: 'config',
           currentPickerValue: this.data.selectedConfig
         })
@@ -1017,58 +1066,6 @@ Page({
     })
   },
 
-  // 刷新库存数据
-  refreshInventoryData() {
-    console.log('手动刷新库存数据')
-    this.loadInventoryAndPriceData()
-  },
-
-  // 测试数据连接 - 临时调试函数
-  async testDataConnection() {
-    try {
-      wx.showLoading({ title: '测试数据连接...' })
-
-      console.log('=== 测试新的dealer-order云函数连接 ===')
-      const testResult = await wx.cloud.callFunction({
-        name: 'dealer-order',
-        data: {
-          action: 'getSeriesList',
-          data: {} // 不添加任何筛选条件，获取所有数据
-        }
-      })
-
-      console.log('dealer-order云函数测试结果:', testResult)
-
-      if (testResult.result && testResult.result.code === 0 && testResult.result.data) {
-        const data = testResult.result.data
-        console.log('车型系列数据总数:', data.length)
-
-        wx.showModal({
-          title: '数据连接测试',
-          content: `dealer-order云函数连接成功！\n\n车型系列数量: ${data.length}个\n\n详细信息请查看控制台`,
-          showCancel: false
-        })
-      } else {
-        wx.showModal({
-          title: '数据连接测试',
-          content: 'dealer-order云函数连接失败，请检查云函数配置。',
-          showCancel: false
-        })
-      }
-
-      wx.hideLoading()
-
-    } catch (error) {
-      wx.hideLoading()
-      console.error('测试数据连接失败:', error)
-      wx.showModal({
-        title: '数据连接测试',
-        content: `数据连接测试失败：${error.message}`,
-        showCancel: false
-      })
-    }
-  },
-
   // 工具方法：根据车型获取基础价格
   getBasePriceByModel(model) {
     // 首先尝试从实时价格数据中查找
@@ -1153,160 +1150,5 @@ Page({
   isLowPowerModel(model) {
     const lowPowerModels = ['S1-23款磷酸铁锂4kw心动版']
     return lowPowerModels.some(lowModel => model.includes(lowModel) || lowModel.includes(model))
-  },
-
-  // 检查当前数据状态 - 临时调试函数
-  checkCurrentDataStatus() {
-    const currentData = {
-      hongriInventoryData: this.data.hongriInventoryData,
-      seriesList: this.data.seriesList,
-      vehiclePricesData: this.data.vehiclePricesData,
-      selectedSeries: this.data.selectedSeries,
-      selectedModel: this.data.selectedModel,
-      selectedConfig: this.data.selectedConfig,
-      selectedColor: this.data.selectedColor
-    }
-
-    console.log('=== 当前页面数据状态检查 ===')
-    console.log('鸿日库存数据条数:', currentData.hongriInventoryData.length)
-    console.log('车型系列列表:', currentData.seriesList)
-    console.log('价格数据条数:', currentData.vehiclePricesData.length)
-    console.log('当前选择状态:', {
-      series: currentData.selectedSeries,
-      model: currentData.selectedModel,
-      config: currentData.selectedConfig,
-      color: currentData.selectedColor
-    })
-
-    // 如果有库存数据，重新提取系列列表
-    if (currentData.hongriInventoryData.length > 0) {
-      console.log('重新提取车型系列列表...')
-      const newSeriesList = this.extractSeriesList(currentData.hongriInventoryData)
-      console.log('重新提取的系列列表:', newSeriesList)
-    }
-
-    wx.showModal({
-      title: '数据状态检查',
-      content: `库存数据: ${currentData.hongriInventoryData.length}条\n系列列表: ${currentData.seriesList.length}个\n价格数据: ${currentData.vehiclePricesData.length}条\n\n详细信息请查看控制台`,
-      showCancel: false
-    })
-  },
-
-  // 测试经销商价格表连接 - 临时调试函数
-  async testDealerPriceConnection() {
-    try {
-      wx.showLoading({ title: '测试经销商价格表连接...' })
-
-      console.log('=== 开始获取车型系列列表 ===')
-      const orderResult = await wx.cloud.callFunction({
-        name: 'dealer-order',
-        data: {
-          action: 'getSeriesList',
-          data: {} // 不添加任何筛选条件，获取所有数据
-        }
-      })
-
-      console.log('车型系列查询结果:', orderResult)
-
-      console.log('=== 开始测试车辆价格查询 ===')
-      const priceResult = await wx.cloud.callFunction({
-        name: 'dealer-order',
-        data: {
-          action: 'getVehiclePrice',
-          data: {
-            series: '鸿日S1',
-            model: 'S1标准版'
-          }
-        }
-      })
-
-      console.log('车辆价格查询结果:', priceResult)
-
-      wx.hideLoading()
-
-      if (orderResult.result && orderResult.result.code === 0) {
-        const seriesData = orderResult.result.data
-        const priceData = priceResult.result && priceResult.result.code === 0 ? priceResult.result.data : null
-
-        wx.showModal({
-          title: '经销商功能测试',
-          content: `dealer-order云函数连接成功！\n\n车型系列: ${seriesData.length}个\n价格查询: ${priceData ? '成功' : '失败'}\n\n详细信息请查看控制台`,
-          showCancel: false
-        })
-      } else {
-        wx.showModal({
-          title: '经销商功能测试',
-          content: 'dealer-order云函数连接失败，请检查云函数配置。',
-          showCancel: false
-        })
-      }
-
-    } catch (error) {
-      wx.hideLoading()
-      console.error('测试经销商功能失败:', error)
-      wx.showModal({
-        title: '经销商功能测试',
-        content: `测试失败：${error.message}`,
-        showCancel: false
-      })
-    }
-  },
-
-  // 测试新的dealer-order云函数 - 临时调试函数
-  async testNewCloudFunction() {
-    try {
-      wx.showLoading({ title: '测试新云函数...' })
-
-      console.log('=== 开始测试新的dealer-order云函数 ===')
-      const result = await wx.cloud.callFunction({
-        name: 'dealer-order',
-        data: {
-          action: 'getSeriesList',
-          data: {}
-        }
-      })
-
-      console.log('新云函数测试结果:', result)
-      console.log('详细结果分析:', {
-        errMsg: result.errMsg,
-        hasResult: !!result.result,
-        resultType: typeof result.result,
-        result: result.result
-      })
-
-      wx.hideLoading()
-
-      if (result.result) {
-        wx.showModal({
-          title: '新云函数测试结果',
-          content: `调用状态: ${result.errMsg}\n返回代码: ${result.result.code}\n消息: ${result.result.message}\n数据条数: ${result.result.data ? result.result.data.length : 0}`,
-          showCancel: false
-        })
-      } else {
-        wx.showModal({
-          title: '新云函数测试失败',
-          content: `错误信息: ${result.errMsg}\n可能原因: 云函数未部署或部署失败`,
-          showCancel: false
-        })
-      }
-
-    } catch (error) {
-      wx.hideLoading()
-      console.error('测试新云函数失败:', error)
-      wx.showModal({
-        title: '新云函数测试异常',
-        content: `异常信息: ${error.message}`,
-        showCancel: false
-      })
-    }
-  },
-
-  // 创建测试数据 - 临时调试函数（已废弃，使用新的dealer-order云函数）
-  async createTestData() {
-    wx.showModal({
-      title: '提示',
-      content: '此功能已废弃，请使用新的dealer-order云函数进行数据管理。',
-      showCancel: false
-    })
   },
 }) 

@@ -1,3 +1,23 @@
+<!-- WXS模块：处理数学运算 -->
+<wxs module="utils">
+  var abs = function(num) {
+    return num < 0 ? -num : num;
+  };
+  
+  var formatPrice = function(price) {
+    if (price < 0) {
+      return '-¥' + abs(price);
+    } else {
+      return '¥' + price;
+    }
+  };
+  
+  module.exports = {
+    abs: abs,
+    formatPrice: formatPrice
+  };
+</wxs>
+
 <!-- 订单状态头部 -->
 <view class="status-header">
   <view class="status-info">
@@ -103,7 +123,7 @@
       <view class="info-row" wx:for="{{orderDetail.additionalConfigs}}" wx:key="id">
         <text class="info-label">{{item.name}}</text>
         <view class="price-highlight {{item.price < 0 ? 'negative' : ''}}">
-          {{item.price < 0 ? '-' : ''}}¥{{Math.abs(item.price)}}
+          {{item.price < 0 ? '-' : ''}}¥{{utils.abs(item.price)}}
         </view>
       </view>
       <view class="info-row total-row">
