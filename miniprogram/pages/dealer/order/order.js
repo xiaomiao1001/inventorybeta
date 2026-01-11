@@ -1,5 +1,6 @@
 // 获取应用实例
 const app = getApp()
+const api = require('../../../services/api')
 
 Page({
   data: {
@@ -178,40 +179,21 @@ Page({
 
       console.log('开始加载库存和价格数据')
 
-      // 使用新的dealer-order云函数获取车型系列列表
-      const seriesResult = await wx.cloud.callFunction({
-        name: 'dealer-order',
-        data: {
-          action: 'getSeriesList',
-          data: {}
-        }
+      // 使用 services 层获取车型系列列表
+      const { list: seriesList, inventoryData, priceData } = await api.getSeriesList()
+      console.log('获取到的车型系列列表:', seriesList)
+
+      this.setData({
+        seriesList,
+        hongriInventoryData: inventoryData && inventoryData.length ? inventoryData : this.data.hongriInventoryData,
+        vehiclePricesData: priceData && priceData.length ? priceData : this.data.vehiclePricesData
       })
 
-      console.log('新云函数车型系列查询结果:', seriesResult)
-
-      if (seriesResult.result && seriesResult.result.code === 0 && seriesResult.result.data) {
-        const seriesList = seriesResult.result.data
-        console.log('获取到的车型系列列表:', seriesList)
-
-        this.setData({
-          seriesList: seriesList
-        })
-
-        wx.showToast({
-          title: `加载成功，共${seriesList.length}个车型系列`,
-          icon: 'success',
-          duration: 2000
-        })
-      } else {
-        console.log('新云函数调用失败，使用备用数据')
-        this.initFallbackData()
-        
-        wx.showToast({
-          title: '使用备用数据',
-          icon: 'none',
-          duration: 2000
-        })
-      }
+      wx.showToast({
+        title: `加载成功，共${seriesList.length}个车型系列`,
+        icon: 'success',
+        duration: 2000
+      })
 
       wx.hideLoading()
 
@@ -480,43 +462,28 @@ Page({
         series: this.data.selectedSeries
       })
 
-      // 先尝试调用新的云函数获取车型列表
+      // 先尝试调用 services 层获取车型列表
       try {
-        const modelsResult = await wx.cloud.callFunction({
-          name: 'dealer-order',
-          data: {
-            action: 'getModelsList',
-            data: {
-              series: this.data.selectedSeries
-            }
-          }
-        })
+        const models = await api.getModelsList(this.data.selectedSeries)
 
-        console.log('新云函数车型查询结果:', modelsResult)
-
-        if (modelsResult.result && modelsResult.result.code === 0 && modelsResult.result.data) {
-          const models = modelsResult.result.data
-
-          if (models.length === 0) {
-            wx.showToast({
-              title: '该系列暂无可选车型',
-              icon: 'none'
-            })
-            return
-          }
-
-          this.setData({
-            showPicker: true,
-            pickerTitle: '选择车型',
-            pickerOptions: models,
-            currentPickerType: 'model',
-            currentPickerValue: this.data.selectedModel
+        if (models.length === 0) {
+          wx.showToast({
+            title: '该系列暂无可选车型',
+            icon: 'none'
           })
-        } else {
-          throw new Error('新云函数返回失败')
+          wx.hideLoading()
+          return
         }
+
+        this.setData({
+          showPicker: true,
+          pickerTitle: '选择车型',
+          pickerOptions: models,
+          currentPickerType: 'model',
+          currentPickerValue: this.data.selectedModel
+        })
       } catch (newFunctionError) {
-        console.log('新云函数获取车型失败，使用本地数据:', newFunctionError)
+        console.log('服务层获取车型失败，使用本地数据:', newFunctionError)
 
         // 使用本地库存数据提取车型列表
         const models = this.extractModelsList(this.data.selectedSeries)
@@ -526,6 +493,7 @@ Page({
             title: '该系列暂无可选车型',
             icon: 'none'
           })
+          wx.hideLoading()
           return
         }
 
@@ -565,55 +533,39 @@ Page({
         title: '加载配置中...'
       })
 
-      // 先尝试调用新的云函数获取配置列表
+      // 先尝试调用 services 层获取配置列表
       try {
-        const configsResult = await wx.cloud.callFunction({
-          name: 'dealer-order',
-          data: {
-            action: 'getConfigsList',
-            data: {
-              series: this.data.selectedSeries,
-              model: this.data.selectedModel
-            }
-          }
-        })
+        const configs = await api.getConfigsList(this.data.selectedSeries, this.data.selectedModel)
 
-        console.log('新云函数配置查询结果:', configsResult)
+        // 增强数据验证：过滤空值和无效数据
+        const validConfigs = configs.filter(config => 
+          config && 
+          config.value && 
+          config.value.trim() !== '' && 
+          config.label && 
+          config.label.trim() !== ''
+        )
 
-        if (configsResult.result && configsResult.result.code === 0 && configsResult.result.data) {
-          const configs = configsResult.result.data
-
-          // 增强数据验证：过滤空值和无效数据
-          const validConfigs = configs.filter(config => 
-            config && 
-            config.value && 
-            config.value.trim() !== '' && 
-            config.label && 
-            config.label.trim() !== ''
-          )
-
-          if (validConfigs.length === 0) {
-            wx.showToast({
-              title: '该车型暂无可选配置',
-              icon: 'none'
-            })
-            return
-          }
-
-          console.log('有效配置数据:', validConfigs)
-
-          this.setData({
-            showPicker: true,
-            pickerTitle: '选择配置',
-            pickerOptions: validConfigs,
-            currentPickerType: 'config',
-            currentPickerValue: this.data.selectedConfig
+        if (validConfigs.length === 0) {
+          wx.showToast({
+            title: '该车型暂无可选配置',
+            icon: 'none'
           })
-        } else {
-          throw new Error('新云函数返回失败')
+          wx.hideLoading()
+          return
         }
+
+        console.log('有效配置数据:', validConfigs)
+
+        this.setData({
+          showPicker: true,
+          pickerTitle: '选择配置',
+          pickerOptions: validConfigs,
+          currentPickerType: 'config',
+          currentPickerValue: this.data.selectedConfig
+        })
       } catch (newFunctionError) {
-        console.log('新云函数获取配置失败，使用本地数据:', newFunctionError)
+        console.log('服务层获取配置失败，使用本地数据:', newFunctionError)
 
         // 使用本地库存数据提取配置列表
         const configs = this.extractConfigsList(this.data.selectedSeries, this.data.selectedModel)
@@ -632,6 +584,7 @@ Page({
             title: '该车型暂无可选配置',
             icon: 'none'
           })
+          wx.hideLoading()
           return
         }
 
@@ -673,45 +626,28 @@ Page({
         title: '加载颜色中...'
       })
 
-      // 先尝试调用新的云函数获取颜色列表
+      // 先尝试调用 services 层获取颜色列表
       try {
-        const colorsResult = await wx.cloud.callFunction({
-          name: 'dealer-order',
-          data: {
-            action: 'getColorsList',
-            data: {
-              series: this.data.selectedSeries,
-              model: this.data.selectedModel,
-              config: this.data.selectedConfig
-            }
-          }
-        })
+        const colors = await api.getColorsList(this.data.selectedSeries, this.data.selectedModel, this.data.selectedConfig)
 
-        console.log('新云函数颜色查询结果:', colorsResult)
-
-        if (colorsResult.result && colorsResult.result.code === 0 && colorsResult.result.data) {
-          const colors = colorsResult.result.data
-
-          if (colors.length === 0) {
-            wx.showToast({
-              title: '该配置暂无可选颜色',
-              icon: 'none'
-            })
-            return
-          }
-
-          this.setData({
-            showPicker: true,
-            pickerTitle: '选择颜色',
-            pickerOptions: colors,
-            currentPickerType: 'color',
-            currentPickerValue: this.data.selectedColor
+        if (colors.length === 0) {
+          wx.showToast({
+            title: '该配置暂无可选颜色',
+            icon: 'none'
           })
-        } else {
-          throw new Error('新云函数返回失败')
+          wx.hideLoading()
+          return
         }
+
+        this.setData({
+          showPicker: true,
+          pickerTitle: '选择颜色',
+          pickerOptions: colors,
+          currentPickerType: 'color',
+          currentPickerValue: this.data.selectedColor
+        })
       } catch (newFunctionError) {
-        console.log('新云函数获取颜色失败，使用本地数据:', newFunctionError)
+        console.log('服务层获取颜色失败，使用本地数据:', newFunctionError)
 
         // 使用本地库存数据提取颜色列表
         const colors = this.extractColorsList(this.data.selectedSeries, this.data.selectedModel, this.data.selectedConfig)
@@ -721,6 +657,7 @@ Page({
             title: '该配置暂无可选颜色',
             icon: 'none'
           })
+          wx.hideLoading()
           return
         }
 
@@ -824,24 +761,17 @@ Page({
         color: selectedColor
       })
 
-      // 调用新的云函数获取价格信息
-      const priceResult = await wx.cloud.callFunction({
-        name: 'dealer-order',
-        data: {
-          action: 'getVehiclePrice',
-          data: {
-            series: selectedSeries,
-            model: selectedModel,
-            config: selectedConfig,
-            color: selectedColor
-          }
-        }
+      // 调用 services 层获取价格信息
+      const priceInfo = await api.getVehiclePrice({
+        series: selectedSeries,
+        model: selectedModel,
+        config: selectedConfig,
+        color: selectedColor
       })
 
-      console.log('价格查询结果:', priceResult)
+      console.log('价格查询结果:', priceInfo)
 
-      if (priceResult.result && priceResult.result.code === 0 && priceResult.result.data) {
-        const priceInfo = priceResult.result.data
+      if (priceInfo) {
         console.log('找到匹配的价格:', priceInfo)
 
         // 根据经销商等级选择对应价格
@@ -1146,9 +1076,15 @@ Page({
     return null
   },
 
+  // 工具方法：字段匹配，兼容大小写/空白差异
+  matchField(source, target) {
+    if (!source || !target) return false
+    return source.toString().trim().toLowerCase() === target.toString().trim().toLowerCase()
+  },
+
   // 工具方法：判断是否为低功率车型
   isLowPowerModel(model) {
     const lowPowerModels = ['S1-23款磷酸铁锂4kw心动版']
     return lowPowerModels.some(lowModel => model.includes(lowModel) || lowModel.includes(model))
   },
-}) 
+})
